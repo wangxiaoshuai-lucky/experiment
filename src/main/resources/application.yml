@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: service-experiment
+  ## 选择运行环境
+  profiles:
+    active: dev
+
+## 公共配置 ##
+server:
+  port: 8765
+  servlet:
+    context-path: /experiment
+
+#feign 的超时时间
+feign:
+  client:
+    config:
+      default:
+        connect-timeout: 10000
+        read-timeout: 20000
+
+# cache 配置
+cache:
+  millisecond: 7200000
+
+# log 配置
+logging:
+  level:
+    root: info
+    com.kelab.experiment.dal.dao: debug
+  file: ./logs/experiment.log
+
+# mybatis 扫描路径
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
