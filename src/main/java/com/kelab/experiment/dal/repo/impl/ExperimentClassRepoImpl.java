@@ -33,13 +33,13 @@ public class ExperimentClassRepoImpl implements ExperimentClassRepo {
     }
 
     @Override
-    public List<ExperimentClassDomain> queryPage(Context context, ExperimentClassQuery query) {
-        return convertToDomain(context, experimentClassMapper.queryPage(query));
+    public List<ExperimentClassDomain> queryPage(Context context, ExperimentClassQuery query, boolean isFillUserInfo) {
+        return convertToDomain(context, experimentClassMapper.queryPage(query), isFillUserInfo);
     }
 
     @Override
-    public List<ExperimentClassDomain> queryByIds(Context context, List<Integer> ids) {
-        return convertToDomain(context, experimentClassMapper.queryByIds(ids));
+    public List<ExperimentClassDomain> queryByIds(Context context, List<Integer> ids, boolean isFillUserInfo) {
+        return convertToDomain(context, experimentClassMapper.queryByIds(ids), isFillUserInfo);
     }
 
     @Override
@@ -70,16 +70,17 @@ public class ExperimentClassRepoImpl implements ExperimentClassRepo {
         experimentClassMapper.delete(ids);
     }
 
-    private List<ExperimentClassDomain> convertToDomain(Context context, List<ExperimentClassModel> models) {
+    private List<ExperimentClassDomain> convertToDomain(Context context, List<ExperimentClassModel> models, boolean isFillUserInfo) {
         if (CollectionUtils.isEmpty(models)) {
             return Collections.emptyList();
         }
         List<ExperimentClassDomain> domains = models.stream().map(ExperimentClassConvert::modelToDomain).collect(Collectors.toList());
         // fill teacher info
-        List<Integer> teacherIds = domains.stream().map(ExperimentClassDomain::getTeacherId).collect(Collectors.toList());
-        Map<Integer, UserInfo> userInfoMap = userCenterService.queryByUserIds(context, teacherIds)
-                .stream().collect((Collectors.toMap(UserInfo::getId, obj -> obj, (v1, v2) -> v2)));
-        domains.forEach(item -> item.setTeacherInfo(userInfoMap.get(item.getTeacherId())));
+        if (isFillUserInfo) {
+            List<Integer> teacherIds = domains.stream().map(ExperimentClassDomain::getTeacherId).collect(Collectors.toList());
+            Map<Integer, UserInfo> userInfoMap = userCenterService.queryByUserIds(context, teacherIds);
+            domains.forEach(item -> item.setTeacherInfo(userInfoMap.get(item.getTeacherId())));
+        }
         return domains;
     }
 }

@@ -2,12 +2,15 @@ package com.kelab.experiment.controller;
 
 import cn.wzy.verifyUtils.annotation.Verify;
 import com.kelab.experiment.convert.ExperimentClassConvert;
+import com.kelab.experiment.convert.ExperimentStudentConvert;
 import com.kelab.experiment.service.ExperimentClassService;
 import com.kelab.info.base.JsonAndModel;
 import com.kelab.info.base.constant.StatusMsgConstant;
 import com.kelab.info.context.Context;
 import com.kelab.info.experiment.info.ExperimentClassInfo;
+import com.kelab.info.experiment.info.ExperimentStudentInfo;
 import com.kelab.info.experiment.query.ExperimentClassQuery;
+import com.kelab.info.experiment.query.ExperimentStudentQuery;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -62,6 +65,41 @@ public class ExperimentClassController {
     @Verify(sizeLimit = "ids [1, 200]")
     public JsonAndModel deleteExperimentClass(Context context, @RequestParam("ids") List<Integer> ids) {
         experimentClassService.deleteExperimentClass(context, ids);
+        return JsonAndModel.builder(StatusMsgConstant.SUCCESS).build();
+    }
+
+    /**
+     * 查询班级学生
+     */
+    @GetMapping("/experiment/class/student.do")
+    @Verify(
+            notNull = {"context.operatorId", "context.operatorRoleId", "query.classId", "query.status"},
+            numberLimit = {"query.page [1, 100000]", "query.rows [1, 100000]"}
+    )
+    public JsonAndModel queryStudentPage(Context context, ExperimentStudentQuery query) {
+        return JsonAndModel.builder(StatusMsgConstant.SUCCESS)
+                .data(experimentClassService.queryStudentPage(context, query))
+                .build();
+    }
+
+    /**
+     * 申请加班
+     */
+    @PostMapping("/experiment/class/student.do")
+    @Verify(notNull = {"context.operatorId", "context.operatorRoleId", "classCode"})
+    public JsonAndModel applyClass(Context context, String classCode) {
+        return JsonAndModel.builder(StatusMsgConstant.SUCCESS)
+                .data(experimentClassService.applyClass(context, classCode))
+                .build();
+    }
+
+    /**
+     * 教师审核学生
+     */
+    @PutMapping("/experiment/class/student.do")
+    @Verify(notNull = {"context.operatorId", "context.operatorRoleId", "record.id", "record.status"})
+    public JsonAndModel reviewStudentApply(Context context, @RequestBody ExperimentStudentInfo record) {
+        experimentClassService.reviewStudentApply(context, ExperimentStudentConvert.infoToDomain(record));
         return JsonAndModel.builder(StatusMsgConstant.SUCCESS).build();
     }
 }

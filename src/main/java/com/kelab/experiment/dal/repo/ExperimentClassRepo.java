@@ -8,9 +8,9 @@ import java.util.List;
 
 public interface ExperimentClassRepo {
 
-    List<ExperimentClassDomain> queryPage(Context context, ExperimentClassQuery query);
+    List<ExperimentClassDomain> queryPage(Context context, ExperimentClassQuery query, boolean isFillUserInfo);
 
-    List<ExperimentClassDomain> queryByIds(Context context, List<Integer> ids);
+    List<ExperimentClassDomain> queryByIds(Context context, List<Integer> ids, boolean isFillUserInfo);
 
     Integer queryTotal(ExperimentClassQuery query);
 

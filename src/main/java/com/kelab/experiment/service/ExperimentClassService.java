@@ -1,10 +1,13 @@
 package com.kelab.experiment.service;
 
 import com.kelab.experiment.dal.domain.ExperimentClassDomain;
+import com.kelab.experiment.dal.domain.ExperimentStudentDomain;
 import com.kelab.info.base.PaginationResult;
 import com.kelab.info.context.Context;
 import com.kelab.info.experiment.info.ExperimentClassInfo;
+import com.kelab.info.experiment.info.ExperimentStudentInfo;
 import com.kelab.info.experiment.query.ExperimentClassQuery;
+import com.kelab.info.experiment.query.ExperimentStudentQuery;
 
 import java.util.List;
 
@@ -29,4 +32,19 @@ public interface ExperimentClassService {
      * 删除班级
      */
     void deleteExperimentClass(Context context, List<Integer> ids);
+
+    /**
+     * 分页查询班级学生
+     */
+    PaginationResult<ExperimentStudentInfo> queryStudentPage(Context context, ExperimentStudentQuery query);
+
+    /**
+     * 申请加班
+     */
+    ExperimentClassInfo applyClass(Context context, String classCode);
+
+    /**
+     * 审核学生的加班
+     */
+    void reviewStudentApply(Context context, ExperimentStudentDomain record);
 }

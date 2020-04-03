@@ -1,16 +1,22 @@
 package com.kelab.experiment.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.kelab.experiment.constant.enums.ApplyClassStatus;
 import com.kelab.experiment.convert.ExperimentClassConvert;
+import com.kelab.experiment.convert.ExperimentStudentConvert;
 import com.kelab.experiment.dal.domain.ExperimentClassDomain;
+import com.kelab.experiment.dal.domain.ExperimentStudentDomain;
 import com.kelab.experiment.dal.repo.ExperimentClassRepo;
+import com.kelab.experiment.dal.repo.ExperimentStudentRepo;
 import com.kelab.experiment.service.ExperimentClassService;
 import com.kelab.experiment.support.ContextLogger;
 import com.kelab.info.base.PaginationResult;
 import com.kelab.info.base.constant.UserRoleConstant;
 import com.kelab.info.context.Context;
 import com.kelab.info.experiment.info.ExperimentClassInfo;
+import com.kelab.info.experiment.info.ExperimentStudentInfo;
 import com.kelab.info.experiment.query.ExperimentClassQuery;
+import com.kelab.info.experiment.query.ExperimentStudentQuery;
 import com.kelab.util.uuid.UuidUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -24,11 +30,15 @@ public class ExperimentClassServiceImpl implements ExperimentClassService {
 
     private ExperimentClassRepo experimentClassRepo;
 
+    private ExperimentStudentRepo experimentStudentRepo;
+
     private ContextLogger contextLogger;
 
     public ExperimentClassServiceImpl(ExperimentClassRepo experimentClassRepo,
+                                      ExperimentStudentRepo experimentStudentRepo,
                                       ContextLogger contextLogger) {
         this.experimentClassRepo = experimentClassRepo;
+        this.experimentStudentRepo = experimentStudentRepo;
         this.contextLogger = contextLogger;
     }
 
@@ -39,7 +49,7 @@ public class ExperimentClassServiceImpl implements ExperimentClassService {
             query.setTeacherId(context.getOperatorId());
         }
         PaginationResult<ExperimentClassInfo> result = new PaginationResult<>();
-        result.setPagingList(convertToInfo(experimentClassRepo.queryPage(context, query)));
+        result.setPagingList(convertToInfo(experimentClassRepo.queryPage(context, query, true)));
         result.setTotal(experimentClassRepo.queryTotal(query));
         return result;
     }
@@ -59,9 +69,55 @@ public class ExperimentClassServiceImpl implements ExperimentClassService {
 
     @Override
     public void deleteExperimentClass(Context context, List<Integer> ids) {
-        List<ExperimentClassDomain> old = experimentClassRepo.queryByIds(context, ids);
+        List<ExperimentClassDomain> old = experimentClassRepo.queryByIds(context, ids, true);
         experimentClassRepo.delete(ids);
         contextLogger.info(context, "删除班级: %s", JSON.toJSONString(old));
+    }
+
+    @Override
+    public PaginationResult<ExperimentStudentInfo> queryStudentPage(Context context, ExperimentStudentQuery query) {
+        PaginationResult<ExperimentStudentInfo> result = new PaginationResult<>();
+        result.setPagingList(convertToStudentInfo(experimentStudentRepo.queryPage(context, query, true)));
+        result.setTotal(experimentStudentRepo.queryTotal(query));
+        return result;
+    }
+
+    @Override
+    public ExperimentClassInfo applyClass(Context context, String classCode) {
+        ExperimentClassDomain classDomain = experimentClassRepo.queryByCode(classCode);
+        if (classDomain == null) {
+            return null;
+        }
+        ExperimentStudentDomain old = experimentStudentRepo.queryByUserIdAndClassId(context.getOperatorId(), classDomain.getId());
+        if (old == null) {
+            ExperimentStudentDomain studentDomain = new ExperimentStudentDomain();
+            studentDomain.setStatus(ApplyClassStatus.PADDING);
+            studentDomain.setUserId(context.getOperatorId());
+            studentDomain.setClassId(classDomain.getId());
+            experimentStudentRepo.save(studentDomain);
+        }
+        return ExperimentClassConvert.domainToInfo(classDomain);
+    }
+
+    @Override
+    public void reviewStudentApply(Context context, ExperimentStudentDomain record) {
+        List<ExperimentStudentDomain> studentDomains = experimentStudentRepo.queryByIds(context,
+                Collections.singletonList(record.getId()), false);
+        if (CollectionUtils.isEmpty(studentDomains)) {
+            throw new IllegalArgumentException("记录不存在");
+        }
+        ExperimentStudentDomain old = studentDomains.get(0);
+        // 审核需要做验证，只能审核自己的班级
+        List<ExperimentClassDomain> classDomains = experimentClassRepo.queryByIds(context, Collections.singletonList(old.getClassId()), false);
+        if (CollectionUtils.isEmpty(studentDomains) || !classDomains.get(0).getTeacherId().equals(context.getOperatorId())) {
+            throw new IllegalArgumentException("你开设的班级无此记录");
+        }
+        if (record.getStatus() == ApplyClassStatus.REJECTED) {
+            experimentStudentRepo.delete(Collections.singletonList(old.getId()));
+        } else if (record.getStatus() == ApplyClassStatus.ALLOWED) {
+            old.setStatus(ApplyClassStatus.ALLOWED);
+            experimentStudentRepo.update(old);
+        }
     }
 
     private List<ExperimentClassInfo> convertToInfo(List<ExperimentClassDomain> domains) {
@@ -69,5 +125,12 @@ public class ExperimentClassServiceImpl implements ExperimentClassService {
             return Collections.emptyList();
         }
         return domains.stream().map(ExperimentClassConvert::domainToInfo).collect(Collectors.toList());
+    }
+
+    private List<ExperimentStudentInfo> convertToStudentInfo(List<ExperimentStudentDomain> domains) {
+        if (CollectionUtils.isEmpty(domains)) {
+            return Collections.emptyList();
+        }
+        return domains.stream().map(ExperimentStudentConvert::domainToInfo).collect(Collectors.toList());
     }
 }

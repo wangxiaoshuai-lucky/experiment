@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class UserCenterService {
@@ -22,13 +23,13 @@ public class UserCenterService {
         this.userCenterServiceSender = userCenterServiceSender;
     }
 
-    public List<UserInfo> queryByUserIds(Context context, List<Integer> ids) {
+    public Map<Integer, UserInfo> queryByUserIds(Context context, List<Integer> ids) {
         Map<String, Object> param = new HashMap<>();
         param.put("ids", Strings.collectionToCommaDelimitedString(ids));
         List<UserInfo> userInfos = userCenterServiceSender.queryByUserIds(ParamBuilder.buildParam(context, param));
         if (CollectionUtils.isEmpty(userInfos)) {
-            return Collections.emptyList();
+            return Collections.emptyMap();
         }
-        return userInfos;
+        return userInfos.stream().collect((Collectors.toMap(UserInfo::getId, obj -> obj, (v1, v2) -> v2)));
     }
 }
