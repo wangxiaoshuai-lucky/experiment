@@ -14,6 +14,10 @@ public interface ExperimentContestService {
      */
     PaginationResult<ExperimentContestInfo> queryByClassId(Context context, Integer classId);
 
+    /**
+     * 创建实验
+     */
+    void saveContest(Context context, ExperimentContestDomain domain);
 
     /**
      * 更新实验

@@ -21,6 +21,7 @@ import com.kelab.util.uuid.UuidUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -49,8 +50,34 @@ public class ExperimentClassServiceImpl implements ExperimentClassService {
             query.setTeacherId(context.getOperatorId());
         }
         PaginationResult<ExperimentClassInfo> result = new PaginationResult<>();
-        result.setPagingList(convertToInfo(experimentClassRepo.queryPage(context, query, true)));
-        result.setTotal(experimentClassRepo.queryTotal(query));
+        List<Integer> ids = CommonService.totalIds(query);
+        // 指定id 则返回指定id
+        if (!CollectionUtils.isEmpty(ids)) {
+            List<ExperimentClassInfo> infos = convertToInfo(experimentClassRepo.queryByIds(context, ids, true));
+            result.setPagingList(infos);
+            result.setTotal(infos.size());
+        } else {
+            result.setPagingList(convertToInfo(experimentClassRepo.queryPage(context, query, true)));
+            result.setTotal(experimentClassRepo.queryTotal(query));
+        }
+        return result;
+    }
+
+    @Override
+    public PaginationResult<ExperimentClassInfo> queryPageForUser(Context context, ExperimentStudentQuery query) {
+        // 查看操作本人所加班级
+        query.setUserId(context.getOperatorId());
+        PaginationResult<ExperimentClassInfo> result = new PaginationResult<>();
+        List<ExperimentStudentDomain> studentRef = experimentStudentRepo.queryByUserId(query);
+        if (!CollectionUtils.isEmpty(studentRef)) {
+            List<ExperimentClassInfo> experimentClassInfos = convertToInfo(experimentClassRepo.queryByIds(context,
+                    studentRef.stream().map(ExperimentStudentDomain::getClassId).collect(Collectors.toList()), true));
+            result.setTotal(experimentClassInfos.size());
+            result.setPagingList(experimentClassInfos);
+        } else {
+            result.setPagingList(Collections.emptyList());
+            result.setTotal(0);
+        }
         return result;
     }
 
@@ -88,6 +115,7 @@ public class ExperimentClassServiceImpl implements ExperimentClassService {
         if (classDomain == null) {
             return null;
         }
+        // 查看是否在之前申请过
         ExperimentStudentDomain old = experimentStudentRepo.queryByUserIdAndClassId(context.getOperatorId(), classDomain.getId());
         if (old == null) {
             ExperimentStudentDomain studentDomain = new ExperimentStudentDomain();

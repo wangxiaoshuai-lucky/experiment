@@ -6,6 +6,7 @@ import com.kelab.experiment.dal.domain.ExperimentStudentDomain;
 import com.kelab.experiment.dal.model.ExperimentStudentModel;
 import com.kelab.experiment.dal.repo.ExperimentStudentRepo;
 import com.kelab.experiment.support.service.UserCenterService;
+import com.kelab.info.base.query.PageQuery;
 import com.kelab.info.context.Context;
 import com.kelab.info.experiment.query.ExperimentStudentQuery;
 import com.kelab.info.usercenter.info.UserInfo;
@@ -36,6 +37,11 @@ public class ExperimentStudentRepoImpl implements ExperimentStudentRepo {
     @Override
     public List<ExperimentStudentDomain> queryPage(Context context, ExperimentStudentQuery query, boolean isFillUserInfo) {
         return convertToDomain(context, experimentStudentMapper.queryPage(query), isFillUserInfo);
+    }
+
+    @Override
+    public List<ExperimentStudentDomain> queryByUserId(ExperimentStudentQuery query) {
+        return convertToDomain(null, experimentStudentMapper.queryByUserId(query), false);
     }
 
     @Override

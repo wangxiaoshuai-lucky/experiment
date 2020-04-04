@@ -60,6 +60,15 @@
         and `class_id` = #{classId, jdbcType=INTEGER}
     </select>
 
+    <select id="queryByUserId" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from `Experiment_student`
+        where `user_id` = #{query.userId, jdbcType=INTEGER}
+        and `status` = 1
+        <include refid="limit_sql"/>
+    </select>
+
     <insert id="save">
         insert into `Experiment_student`
         (`user_id`,`class_id`, `status`)

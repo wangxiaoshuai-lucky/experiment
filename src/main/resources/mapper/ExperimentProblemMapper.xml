@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kelab.experiment.dal.dao.ExperimentProblemMapper">
+    <resultMap id="BaseResultMap" type="com.kelab.experiment.dal.model.ExperimentProblemModel">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="contest_id" property="contestId" jdbcType="INTEGER"/>
+        <result column="prob_id" property="probId" jdbcType="INTEGER"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        `id`, `contest_id`,`prob_id`
+    </sql>
+
+    <sql id="limit_sql">
+        limit ${(query.page - 1) * query.rows}, ${query.rows}
+    </sql>
+
+    <select id="queryPage" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from `Experiment_problem`
+        where `contest_id` = #{query.contestId}
+        <include refid="limit_sql"/>
+    </select>
+
+    <select id="queryTotal" resultType="java.lang.Integer">
+        select
+        count(*)
+        from `Experiment_problem`
+        where `contest_id` = #{query.contestId}
+    </select>
+
+    <select id="queryAllByContestId" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from `Experiment_problem`
+        where `contest_id` = #{contestId}
+    </select>
+
+    <delete id="deleteByContestId">
+        delete from `Experiment_problem`
+        where `contest_id` = #{contestId}
+    </delete>
+
+    <insert id="saveList">
+        insert into `Experiment_problem`
+        (`contest_id`,`prob_id`)
+        values
+        <foreach collection="records" item="item" separator=",">
+            (#{item.contestId},#{item.probId})
+        </foreach>
+    </insert>
+</mapper>

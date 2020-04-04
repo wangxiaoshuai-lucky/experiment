@@ -1,5 +1,7 @@
 package com.kelab.experiment.dal.domain;
 
+import java.util.List;
+
 public class ExperimentContestDomain {
 
     private Integer id;
@@ -9,6 +11,8 @@ public class ExperimentContestDomain {
     private Integer classId;
 
     private Long endTime;
+
+    private List<ExperimentProblemDomain> problemDomains;
 
     public Integer getId() {
         return id;
@@ -40,5 +44,13 @@ public class ExperimentContestDomain {
 
     public void setEndTime(Long endTime) {
         this.endTime = endTime;
+    }
+
+    public List<ExperimentProblemDomain> getProblemDomains() {
+        return problemDomains;
+    }
+
+    public void setProblemDomains(List<ExperimentProblemDomain> problemDomains) {
+        this.problemDomains = problemDomains;
     }
 }

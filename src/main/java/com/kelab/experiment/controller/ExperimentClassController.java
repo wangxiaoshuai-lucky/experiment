@@ -25,7 +25,7 @@ public class ExperimentClassController {
     }
 
     /**
-     * 查询所有班级
+     * 查询所有班级, 后台查看
      */
     @GetMapping("/experiment/class.do")
     @Verify(
@@ -35,6 +35,20 @@ public class ExperimentClassController {
     public JsonAndModel queryPage(Context context, ExperimentClassQuery query) {
         return JsonAndModel.builder(StatusMsgConstant.SUCCESS)
                 .data(experimentClassService.queryPage(context, query))
+                .build();
+    }
+
+    /**
+     * 查询所有班级，学生端查看
+     */
+    @GetMapping("/experiment/classForUser.do")
+    @Verify(
+            notNull = {"context.operatorId", "context.operatorRoleId"},
+            numberLimit = {"query.page [1, 100000]", "query.rows [1, 100000]"}
+    )
+    public JsonAndModel queryPageForUser(Context context, ExperimentStudentQuery query) {
+        return JsonAndModel.builder(StatusMsgConstant.SUCCESS)
+                .data(experimentClassService.queryPageForUser(context, query))
                 .build();
     }
 

@@ -14,9 +14,14 @@ import java.util.List;
 public interface ExperimentClassService {
 
     /**
-     * 分页查询，管理员、教师查看
+     * 分页查询，管理员、教师端查看
      */
     PaginationResult<ExperimentClassInfo> queryPage(Context context, ExperimentClassQuery query);
+
+    /**
+     * 分页查询 用户端查看
+     */
+    PaginationResult<ExperimentClassInfo> queryPageForUser(Context context, ExperimentStudentQuery query);
 
     /**
      * 创建班级
