@@ -7,6 +7,7 @@ import com.kelab.info.base.JsonAndModel;
 import com.kelab.info.base.constant.StatusMsgConstant;
 import com.kelab.info.context.Context;
 import com.kelab.info.experiment.info.ExperimentContestInfo;
+import com.kelab.info.experiment.query.ExperimentProblemQuery;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -65,5 +66,19 @@ public class ExperimentContestController {
     public JsonAndModel deleteContest(Context context, @RequestParam("ids") List<Integer> ids) {
         experimentContestService.deleteContest(context, ids);
         return JsonAndModel.builder(StatusMsgConstant.SUCCESS).build();
+    }
+
+    /**
+     * 查询实验题目
+     */
+    @GetMapping("/experiment/contest/problems.do")
+    @Verify(
+            notNull = {"context.operatorId", "context.operatorRoleId", "query.contestId"},
+            numberLimit = {"query.page [1, 100000]", "query.rows [1, 100000]"}
+    )
+    public JsonAndModel queryByContestIdPage(Context context, ExperimentProblemQuery query) {
+        return JsonAndModel.builder(StatusMsgConstant.SUCCESS)
+                .data(experimentContestService.queryByContestIdPage(context, query))
+                .build();
     }
 }

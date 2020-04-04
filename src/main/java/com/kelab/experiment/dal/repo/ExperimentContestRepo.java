@@ -8,6 +8,8 @@ public interface ExperimentContestRepo {
 
     List<ExperimentContestDomain> queryByClassId(Integer classId);
 
+    List<ExperimentContestDomain> queryByIds(List<Integer> ids);
+
     void save(ExperimentContestDomain record);
 
     void update(ExperimentContestDomain record);

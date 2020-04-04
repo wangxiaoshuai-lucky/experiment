@@ -4,6 +4,8 @@ import com.kelab.experiment.dal.domain.ExperimentContestDomain;
 import com.kelab.info.base.PaginationResult;
 import com.kelab.info.context.Context;
 import com.kelab.info.experiment.info.ExperimentContestInfo;
+import com.kelab.info.experiment.info.ExperimentProblemInfo;
+import com.kelab.info.experiment.query.ExperimentProblemQuery;
 
 import java.util.List;
 
@@ -28,4 +30,9 @@ public interface ExperimentContestService {
      * 删除实验
      */
     void deleteContest(Context context, List<Integer> ids);
+
+    /**
+     * 通过 contestId 分页查询题目
+     */
+    PaginationResult<ExperimentProblemInfo> queryByContestIdPage(Context context, ExperimentProblemQuery query);
 }

@@ -11,6 +11,8 @@ public interface ExperimentContestMapper {
 
     List<ExperimentContestModel> queryByClassId(@Param("classId") Integer classId);
 
+    List<ExperimentContestModel> queryByIds(@Param("ids") List<Integer> ids);
+
     void save(@Param("record") ExperimentContestModel record);
 
     void update(@Param("record") ExperimentContestModel record);

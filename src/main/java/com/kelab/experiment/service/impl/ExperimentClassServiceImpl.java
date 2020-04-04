@@ -1,6 +1,7 @@
 package com.kelab.experiment.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.google.common.base.Preconditions;
 import com.kelab.experiment.constant.enums.ApplyClassStatus;
 import com.kelab.experiment.convert.ExperimentClassConvert;
 import com.kelab.experiment.convert.ExperimentStudentConvert;
@@ -21,7 +22,6 @@ import com.kelab.util.uuid.UuidUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -131,15 +131,12 @@ public class ExperimentClassServiceImpl implements ExperimentClassService {
     public void reviewStudentApply(Context context, ExperimentStudentDomain record) {
         List<ExperimentStudentDomain> studentDomains = experimentStudentRepo.queryByIds(context,
                 Collections.singletonList(record.getId()), false);
-        if (CollectionUtils.isEmpty(studentDomains)) {
-            throw new IllegalArgumentException("记录不存在");
-        }
+        Preconditions.checkArgument(!CollectionUtils.isEmpty(studentDomains), "记录不存在");
         ExperimentStudentDomain old = studentDomains.get(0);
         // 审核需要做验证，只能审核自己的班级
         List<ExperimentClassDomain> classDomains = experimentClassRepo.queryByIds(context, Collections.singletonList(old.getClassId()), false);
-        if (CollectionUtils.isEmpty(studentDomains) || !classDomains.get(0).getTeacherId().equals(context.getOperatorId())) {
-            throw new IllegalArgumentException("你开设的班级无此记录");
-        }
+        Preconditions.checkArgument(!CollectionUtils.isEmpty(studentDomains) &&
+                classDomains.get(0).getTeacherId().equals(context.getOperatorId()), "你开设的班级无此记录");
         if (record.getStatus() == ApplyClassStatus.REJECTED) {
             experimentStudentRepo.delete(Collections.singletonList(old.getId()));
         } else if (record.getStatus() == ApplyClassStatus.ALLOWED) {

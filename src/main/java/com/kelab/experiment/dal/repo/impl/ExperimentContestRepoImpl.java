@@ -30,6 +30,11 @@ public class ExperimentContestRepoImpl implements ExperimentContestRepo {
     }
 
     @Override
+    public List<ExperimentContestDomain> queryByIds(List<Integer> ids) {
+        return convertToDomain(experimentContestMapper.queryByIds(ids));
+    }
+
+    @Override
     public void save(ExperimentContestDomain record) {
         ExperimentContestModel model = ExperimentContestConvert.domainToModel(record);
         this.experimentContestMapper.save(model);

@@ -18,6 +18,16 @@
         where `class_id` = #{classId, jdbcType=INTEGER}
         order by `end_time` asc
     </select>
+    <select id="queryByIds" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from `Experiment_contest`
+        where `id` in
+        <foreach collection="ids" separator=","
+                 open="(" item="item" close=")">
+            #{item}
+        </foreach>
+    </select>
 
     <insert id="save" keyProperty="id" useGeneratedKeys="true">
         insert into `Experiment_contest`
