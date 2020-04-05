@@ -8,6 +8,8 @@ public class ExperimentStudentModel {
 
     private Integer classId;
 
+    private Integer groupId;
+
     private Integer status;
 
     public Integer getId() {
@@ -40,5 +42,13 @@ public class ExperimentStudentModel {
 
     public void setStatus(Integer status) {
         this.status = status;
+    }
+
+    public Integer getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(Integer groupId) {
+        this.groupId = groupId;
     }
 }

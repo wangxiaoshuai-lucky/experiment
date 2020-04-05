@@ -130,9 +130,9 @@ public class ExperimentClassServiceImpl implements ExperimentClassService {
     @Override
     public void reviewStudentApply(Context context, ExperimentReviewStudentInfo record) {
         if (record.getStatus().equals(ApplyClassStatus.REJECTED.value())) {
-            experimentStudentRepo.delete(record);
+            experimentStudentRepo.reject(record);
         } else if (record.getStatus().equals(ApplyClassStatus.ALLOWED.value())) {
-            experimentStudentRepo.update(record);
+            experimentStudentRepo.allow(record);
         }
     }
 

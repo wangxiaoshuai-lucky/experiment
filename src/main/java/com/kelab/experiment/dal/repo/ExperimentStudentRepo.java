@@ -47,10 +47,15 @@ public interface ExperimentStudentRepo {
     /**
      * 审核申请记录，用于同意加班
      */
-    void update(ExperimentReviewStudentInfo record);
+    void allow(ExperimentReviewStudentInfo record);
 
     /**
      * 审核申请记录，用于拒绝加班
      */
-    void delete(ExperimentReviewStudentInfo record);
+    void reject(ExperimentReviewStudentInfo record);
+
+    /**
+     * 重置分组，在删除分组的时候调用
+     */
+    void resetGroup(Integer classId, List<Integer> groupIds);
 }

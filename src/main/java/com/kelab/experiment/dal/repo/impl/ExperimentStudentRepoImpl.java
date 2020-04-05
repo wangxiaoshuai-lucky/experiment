@@ -85,21 +85,28 @@ public class ExperimentStudentRepoImpl implements ExperimentStudentRepo {
     @Override
     public void save(ExperimentStudentDomain record) {
         experimentStudentMapper.save(ExperimentStudentConvert.domainToModel(record));
-        redisCache.deleteByPre(CacheBizName.EXPERIMENT_STUDENT_PAGE, record.getClassId() + "::" + record.getStatus());
+        redisCache.deleteByPre(CacheBizName.EXPERIMENT_STUDENT_PAGE, record.getClassId() + "::" + ApplyClassStatus.PADDING.value());
     }
 
     @Override
-    public void update(ExperimentReviewStudentInfo record) {
-        experimentStudentMapper.update(record);
-        redisCache.deleteByPre(CacheBizName.EXPERIMENT_STUDENT_PAGE, record.getClassId() + "::" + record.getStatus());
+    public void allow(ExperimentReviewStudentInfo record) {
+        experimentStudentMapper.allow(record);
+        // 状态从 padding => allow
+        redisCache.deleteByPre(CacheBizName.EXPERIMENT_STUDENT_PAGE, record.getClassId());
     }
 
     @Override
-    public void delete(ExperimentReviewStudentInfo record) {
-        experimentStudentMapper.delete(record);
-        redisCache.deleteByPre(CacheBizName.EXPERIMENT_STUDENT_PAGE, record.getClassId() + "::" + record.getStatus());
+    public void reject(ExperimentReviewStudentInfo record) {
+        experimentStudentMapper.reject(record);
+        // 状态从 padding => 删除记录
+        redisCache.deleteByPre(CacheBizName.EXPERIMENT_STUDENT_PAGE, record.getClassId() + "::" + ApplyClassStatus.PADDING.value());
     }
 
+    @Override
+    public void resetGroup(Integer classId,  List<Integer> groupIds) {
+        experimentStudentMapper.resetGroup(classId, groupIds);
+        redisCache.deleteByPre(CacheBizName.EXPERIMENT_STUDENT_PAGE, getClass() + "::" + ApplyClassStatus.ALLOWED.value());
+    }
 
     private List<ExperimentStudentDomain> convertToDomain(Context context, List<ExperimentStudentModel> models, boolean isFillUserInfo) {
         if (CollectionUtils.isEmpty(models)) {

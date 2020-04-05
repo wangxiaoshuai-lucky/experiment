@@ -5,10 +5,11 @@
         <id column="id" property="id" jdbcType="INTEGER"/>
         <result column="user_id" property="userId" jdbcType="INTEGER"/>
         <result column="class_id" property="classId" jdbcType="INTEGER"/>
+        <result column="group_id" property="groupId" jdbcType="INTEGER"/>
         <result column="status" property="status" jdbcType="INTEGER"/>
     </resultMap>
     <sql id="Base_Column_List">
-        `id`, `user_id`,`class_id`, `status`
+        `id`, `user_id`,`class_id`, `group_id`, `status`
     </sql>
     <sql id="limit_sql">
         limit ${(query.page - 1) * query.rows}, ${query.rows}
@@ -83,7 +84,7 @@
         (#{record.userId, jdbcType=INTEGER}, #{record.classId, jdbcType=INTEGER}, #{record.status, jdbcType=INTEGER})
     </insert>
 
-    <update id="update">
+    <update id="allow">
         update `Experiment_student`
         set `status` = #{record.status, jdbcType=INTEGER}
         where `id` in
@@ -93,7 +94,7 @@
         </foreach>
     </update>
 
-    <delete id="delete">
+    <delete id="reject">
         delete from `Experiment_student`
         where `id` in
         <foreach collection="ids" item="item"
@@ -101,4 +102,15 @@
             #{item}
         </foreach>
     </delete>
+
+    <update id="resetGroup">
+        update `Experiment_student`
+        set `group_id` = 0
+        where `class_id` = #{classId, jdbcType=INTEGER}
+        and `group_id` in
+        <foreach collection="groupIds" item="item"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
 </mapper>

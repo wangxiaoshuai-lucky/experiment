@@ -1,7 +1,6 @@
 package com.kelab.experiment.dal.dao;
 
 import com.kelab.experiment.dal.model.ExperimentStudentModel;
-import com.kelab.info.base.query.PageQuery;
 import com.kelab.info.experiment.info.ExperimentReviewStudentInfo;
 import com.kelab.info.experiment.query.ExperimentStudentQuery;
 import org.apache.ibatis.annotations.Mapper;
@@ -38,7 +37,9 @@ public interface ExperimentStudentMapper {
 
     void save(@Param("record") ExperimentStudentModel record);
 
-    void update(@Param("record") ExperimentReviewStudentInfo record);
+    void allow(@Param("record") ExperimentReviewStudentInfo record);
 
-    void delete(@Param("record") ExperimentReviewStudentInfo record);
+    void reject(@Param("record") ExperimentReviewStudentInfo record);
+
+    void resetGroup(@Param("classId")Integer classId, @Param("groupIds")  List<Integer> groupIds);
 }

@@ -11,6 +11,8 @@ public class ExperimentStudentDomain {
 
     private Integer classId;
 
+    private Integer groupId;
+
     private ApplyClassStatus status;
 
     private UserInfo studentInfo;
@@ -53,5 +55,13 @@ public class ExperimentStudentDomain {
 
     public void setStudentInfo(UserInfo studentInfo) {
         this.studentInfo = studentInfo;
+    }
+
+    public Integer getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(Integer groupId) {
+        this.groupId = groupId;
     }
 }

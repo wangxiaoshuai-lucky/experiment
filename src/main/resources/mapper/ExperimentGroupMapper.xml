@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kelab.experiment.dal.dao.ExperimentGroupMapper">
+    <resultMap id="BaseResultMap" type="com.kelab.experiment.dal.model.ExperimentGroupModel">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="class_id" property="classId" jdbcType="INTEGER"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        `id`, `name`,`class_id`
+    </sql>
+
+    <select id="queryAllByClassId" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from `Experiment_group`
+        where `class_id` = #{classId, jdbcType=INTEGER}
+    </select>
+    <select id="queryById" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from `Experiment_group`
+        where `id` = #{id, jdbcType=INTEGER}
+    </select>
+
+
+    <insert id="save">
+        insert into `Experiment_group`
+        (`name`,`class_id`)
+        values
+        (#{record.name, jdbcType=VARCHAR}, #{record.classId, jdbcType=INTEGER})
+    </insert>
+
+    <update id="update">
+        update `Experiment_group`
+        set `name` = #{record.name, jdbcType=VARCHAR}
+        where `id` = #{record.id, jdbcType=INTEGER}
+    </update>
+
+    <delete id="delete">
+        delete from `Experiment_group`
+        where `id` in
+        <foreach collection="ids" item="item"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
+</mapper>
