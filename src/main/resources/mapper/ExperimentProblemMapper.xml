@@ -34,7 +34,8 @@
         <include refid="Base_Column_List"/>
         from `Experiment_problem`
         where `contest_id` in
-        <foreach collection="contestIds" item="item" separator=",">
+        <foreach collection="contestIds" item="item"
+                 open="(" separator="," close=")">
             #{item}
         </foreach>
     </select>

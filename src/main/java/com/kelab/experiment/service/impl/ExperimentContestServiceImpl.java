@@ -117,6 +117,12 @@ public class ExperimentContestServiceImpl implements ExperimentContestService {
         List<Integer> allProblemIds = contestProblems.get(contestId).stream().map(ExperimentProblemDomain::getProbId).collect(Collectors.toList());
         // 所有学生
         List<ExperimentStudentDomain> students = experimentStudentRepo.queryAllByClassId(context, contest.getClassId(), true);
+        if (CollectionUtils.isEmpty(students)) {
+            PaginationResult<UserContestRankResult> result = new PaginationResult<>();
+            result.setTotal(0);
+            result.setPagingList(Collections.emptyList());
+            return result;
+        }
         List<Integer> userIds = students.stream().map(ExperimentStudentDomain::getUserId).collect(Collectors.toList());
         // 所有ac记录
         List<ProblemUserMarkInfo> userAcInfos = problemCenterService.queryByUserIdsAndProbIdsAndEndTime(context, userIds, allProblemIds, contest.getEndTime());

@@ -19,7 +19,7 @@
         from `Experiment_contest`
         where 1 = 1
         <if test="query.classId != null">
-            and `class_id` = #{classId, jdbcType=INTEGER}
+            and `class_id` = #{query.classId, jdbcType=INTEGER}
         </if>
         order by `end_time` asc
         <include refid="limit_sql"/>
@@ -40,7 +40,7 @@
         from `Experiment_contest`
         where 1 = 1
         <if test="query.classId != null">
-            and `class_id` = #{classId, jdbcType=INTEGER}
+            and `class_id` = #{query.classId, jdbcType=INTEGER}
         </if>
     </select>
 
