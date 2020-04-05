@@ -8,7 +8,7 @@ import com.kelab.info.base.JsonAndModel;
 import com.kelab.info.base.constant.StatusMsgConstant;
 import com.kelab.info.context.Context;
 import com.kelab.info.experiment.info.ExperimentClassInfo;
-import com.kelab.info.experiment.info.ExperimentStudentInfo;
+import com.kelab.info.experiment.info.ExperimentReviewStudentInfo;
 import com.kelab.info.experiment.query.ExperimentClassQuery;
 import com.kelab.info.experiment.query.ExperimentStudentQuery;
 import org.springframework.web.bind.annotation.*;
@@ -111,9 +111,12 @@ public class ExperimentClassController {
      * 教师审核学生
      */
     @PutMapping("/experiment/class/student.do")
-    @Verify(notNull = {"context.operatorId", "context.operatorRoleId", "record.id", "record.status"})
-    public JsonAndModel reviewStudentApply(Context context, @RequestBody ExperimentStudentInfo record) {
-        experimentClassService.reviewStudentApply(context, ExperimentStudentConvert.infoToDomain(record));
+    @Verify(
+            notNull = {"context.operatorId", "context.operatorRoleId", "record.status"},
+            sizeLimit = "record.ids [1, 10000]"
+    )
+    public JsonAndModel reviewStudentApply(Context context, @RequestBody ExperimentReviewStudentInfo record) {
+        experimentClassService.reviewStudentApply(context, record);
         return JsonAndModel.builder(StatusMsgConstant.SUCCESS).build();
     }
 }

@@ -1,13 +1,17 @@
 package com.kelab.experiment.dal.repo.impl;
 
+import com.alibaba.fastjson.JSON;
+import com.kelab.experiment.constant.enums.ApplyClassStatus;
+import com.kelab.experiment.constant.enums.CacheBizName;
 import com.kelab.experiment.convert.ExperimentStudentConvert;
 import com.kelab.experiment.dal.dao.ExperimentStudentMapper;
 import com.kelab.experiment.dal.domain.ExperimentStudentDomain;
 import com.kelab.experiment.dal.model.ExperimentStudentModel;
+import com.kelab.experiment.dal.redis.RedisCache;
 import com.kelab.experiment.dal.repo.ExperimentStudentRepo;
 import com.kelab.experiment.support.service.UserCenterService;
-import com.kelab.info.base.query.PageQuery;
 import com.kelab.info.context.Context;
+import com.kelab.info.experiment.info.ExperimentReviewStudentInfo;
 import com.kelab.info.experiment.query.ExperimentStudentQuery;
 import com.kelab.info.usercenter.info.UserInfo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,17 +30,36 @@ public class ExperimentStudentRepoImpl implements ExperimentStudentRepo {
 
     private UserCenterService userCenterService;
 
+    private RedisCache redisCache;
+
     @Autowired(required = false)
     public ExperimentStudentRepoImpl(ExperimentStudentMapper experimentStudentMapper,
-                                     UserCenterService userCenterService) {
+                                     UserCenterService userCenterService,
+                                     RedisCache redisCache) {
         this.experimentStudentMapper = experimentStudentMapper;
         this.userCenterService = userCenterService;
+        this.redisCache = redisCache;
     }
 
+    /**
+     * classId::status::page::rows
+     */
+    private String buildCacheKey(ExperimentStudentQuery query) {
+        return query.getClassId() + "::" + query.getStatus() + "::" + query.getPage() + "::" + query.getRows();
+    }
 
     @Override
     public List<ExperimentStudentDomain> queryPage(Context context, ExperimentStudentQuery query, boolean isFillUserInfo) {
-        return convertToDomain(context, experimentStudentMapper.queryPage(query), isFillUserInfo);
+        String cacheObj = redisCache.cacheOne(CacheBizName.EXPERIMENT_STUDENT_PAGE, buildCacheKey(query),
+                String.class, missKey -> JSON.toJSONString(experimentStudentMapper.queryPage(query)));
+        return convertToDomain(context, JSON.parseArray(cacheObj, ExperimentStudentModel.class), isFillUserInfo);
+    }
+
+    @Override
+    public List<ExperimentStudentDomain> queryAllByClassId(Context context, Integer classId, boolean isFillUserInfo) {
+        String cacheObj = redisCache.cacheOne(CacheBizName.EXPERIMENT_STUDENT_PAGE, classId + "::" + ApplyClassStatus.ALLOWED.value(),
+                String.class, missKey -> JSON.toJSONString(experimentStudentMapper.queryAllByClassId(classId)));
+        return convertToDomain(context, JSON.parseArray(cacheObj, ExperimentStudentModel.class), isFillUserInfo);
     }
 
     @Override
@@ -47,11 +70,6 @@ public class ExperimentStudentRepoImpl implements ExperimentStudentRepo {
     @Override
     public List<ExperimentStudentDomain> queryByIds(Context context, List<Integer> ids, boolean isFillUserInfo) {
         return convertToDomain(context, experimentStudentMapper.queryByIds(ids), isFillUserInfo);
-    }
-
-    @Override
-    public void delete(List<Integer> ids) {
-        experimentStudentMapper.delete(ids);
     }
 
     @Override
@@ -67,12 +85,21 @@ public class ExperimentStudentRepoImpl implements ExperimentStudentRepo {
     @Override
     public void save(ExperimentStudentDomain record) {
         experimentStudentMapper.save(ExperimentStudentConvert.domainToModel(record));
+        redisCache.deleteByPre(CacheBizName.EXPERIMENT_STUDENT_PAGE, record.getClassId() + "::" + record.getStatus());
     }
 
     @Override
-    public void update(ExperimentStudentDomain record) {
-        experimentStudentMapper.update(ExperimentStudentConvert.domainToModel(record));
+    public void update(ExperimentReviewStudentInfo record) {
+        experimentStudentMapper.update(record);
+        redisCache.deleteByPre(CacheBizName.EXPERIMENT_STUDENT_PAGE, record.getClassId() + "::" + record.getStatus());
     }
+
+    @Override
+    public void delete(ExperimentReviewStudentInfo record) {
+        experimentStudentMapper.delete(record);
+        redisCache.deleteByPre(CacheBizName.EXPERIMENT_STUDENT_PAGE, record.getClassId() + "::" + record.getStatus());
+    }
+
 
     private List<ExperimentStudentDomain> convertToDomain(Context context, List<ExperimentStudentModel> models, boolean isFillUserInfo) {
         if (CollectionUtils.isEmpty(models)) {

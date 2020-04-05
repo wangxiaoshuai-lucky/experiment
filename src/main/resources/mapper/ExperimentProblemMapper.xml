@@ -29,11 +29,14 @@
         where `contest_id` = #{query.contestId}
     </select>
 
-    <select id="queryAllByContestId" resultMap="BaseResultMap">
+    <select id="queryAllByContestIds" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>
         from `Experiment_problem`
-        where `contest_id` = #{contestId}
+        where `contest_id` in
+        <foreach collection="contestIds" item="item" separator=",">
+            #{item}
+        </foreach>
     </select>
 
     <delete id="deleteByContestId">

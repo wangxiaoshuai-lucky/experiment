@@ -5,6 +5,7 @@ import com.kelab.info.context.Context;
 import com.kelab.info.experiment.query.ExperimentProblemQuery;
 
 import java.util.List;
+import java.util.Map;
 
 
 public interface ExperimentProblemRepo {
@@ -20,7 +21,7 @@ public interface ExperimentProblemRepo {
     /**
      * 带缓存
      */
-    List<ExperimentProblemDomain> queryAllByContestId(Context context, Integer contestId, boolean isFillTitle);
+    Map<Integer, List<ExperimentProblemDomain>> queryAllByContestIds(Context context, List<Integer> contestIds, boolean isFillTitle);
 
 
     /**

@@ -1,6 +1,7 @@
 package com.kelab.experiment.dal.dao;
 
 import com.kelab.experiment.dal.model.ExperimentContestModel;
+import com.kelab.info.experiment.query.ExperimentContestQuery;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -9,7 +10,9 @@ import java.util.List;
 @Mapper
 public interface ExperimentContestMapper {
 
-    List<ExperimentContestModel> queryByClassId(@Param("classId") Integer classId);
+    List<ExperimentContestModel> queryContest(@Param("query") ExperimentContestQuery query);
+
+    Integer queryTotal(@Param("query") ExperimentContestQuery query);
 
     List<ExperimentContestModel> queryByIds(@Param("ids") List<Integer> ids);
 

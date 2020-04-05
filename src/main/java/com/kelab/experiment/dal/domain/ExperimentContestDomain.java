@@ -12,6 +12,10 @@ public class ExperimentContestDomain {
 
     private Long endTime;
 
+    private Integer acNum;
+
+    private Integer totalNum;
+
     private List<ExperimentProblemDomain> problemDomains;
 
     public Integer getId() {
@@ -20,6 +24,22 @@ public class ExperimentContestDomain {
 
     public void setId(Integer id) {
         this.id = id;
+    }
+
+    public Integer getAcNum() {
+        return acNum;
+    }
+
+    public void setAcNum(Integer acNum) {
+        this.acNum = acNum;
+    }
+
+    public Integer getTotalNum() {
+        return totalNum;
+    }
+
+    public void setTotalNum(Integer totalNum) {
+        this.totalNum = totalNum;
     }
 
     public String getTitle() {

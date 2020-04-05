@@ -7,6 +7,7 @@ import com.kelab.info.base.JsonAndModel;
 import com.kelab.info.base.constant.StatusMsgConstant;
 import com.kelab.info.context.Context;
 import com.kelab.info.experiment.info.ExperimentContestInfo;
+import com.kelab.info.experiment.query.ExperimentContestQuery;
 import com.kelab.info.experiment.query.ExperimentProblemQuery;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,13 +23,12 @@ public class ExperimentContestController {
     }
 
     /**
-     * 查询所有的实验
+     * 查询实验
      */
     @GetMapping("/experiment/class/contest.do")
-    @Verify(notNull = "*")
-    public JsonAndModel queryByClassId(Context context, Integer classId) {
+    public JsonAndModel queryContest(Context context, ExperimentContestQuery query) {
         return JsonAndModel.builder(StatusMsgConstant.SUCCESS)
-                .data(experimentContestService.queryByClassId(context, classId))
+                .data(experimentContestService.queryContest(context, query))
                 .build();
     }
 
@@ -79,6 +79,17 @@ public class ExperimentContestController {
     public JsonAndModel queryByContestIdPage(Context context, ExperimentProblemQuery query) {
         return JsonAndModel.builder(StatusMsgConstant.SUCCESS)
                 .data(experimentContestService.queryByContestIdPage(context, query))
+                .build();
+    }
+
+    /**
+     * 查询实验排行
+     */
+    @GetMapping("/experiment/contest/rank.do")
+    @Verify(notNull = {"context.operatorId", "context.operatorRoleId", "contestId"})
+    public JsonAndModel queryRankByContestId(Context context, Integer contestId) {
+        return JsonAndModel.builder(StatusMsgConstant.SUCCESS)
+                .data(experimentContestService.queryRankByContestId(context, contestId))
                 .build();
     }
 }

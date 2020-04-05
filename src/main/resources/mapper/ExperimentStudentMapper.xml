@@ -39,6 +39,13 @@
             #{item}
         </foreach>
     </select>
+    <select id="queryAllByClassId" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from `Experiment_student`
+        where `class_id` = #{classId, jdbcType=INTEGER}
+        and `status` = 1
+    </select>
 
     <select id="queryTotal" resultType="java.lang.Integer">
         select
@@ -79,7 +86,11 @@
     <update id="update">
         update `Experiment_student`
         set `status` = #{record.status, jdbcType=INTEGER}
-        where `id` = #{record.id, jdbcType=INTEGER}
+        where `id` in
+        <foreach collection="ids" item="item"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
     </update>
 
     <delete id="delete">

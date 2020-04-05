@@ -5,6 +5,7 @@ import com.kelab.experiment.dal.domain.ExperimentStudentDomain;
 import com.kelab.info.base.PaginationResult;
 import com.kelab.info.context.Context;
 import com.kelab.info.experiment.info.ExperimentClassInfo;
+import com.kelab.info.experiment.info.ExperimentReviewStudentInfo;
 import com.kelab.info.experiment.info.ExperimentStudentInfo;
 import com.kelab.info.experiment.query.ExperimentClassQuery;
 import com.kelab.info.experiment.query.ExperimentStudentQuery;
@@ -51,5 +52,5 @@ public interface ExperimentClassService {
     /**
      * 审核学生的加班
      */
-    void reviewStudentApply(Context context, ExperimentStudentDomain record);
+    void reviewStudentApply(Context context, ExperimentReviewStudentInfo record);
 }

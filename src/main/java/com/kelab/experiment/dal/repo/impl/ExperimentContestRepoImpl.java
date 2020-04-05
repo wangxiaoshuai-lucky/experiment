@@ -5,6 +5,7 @@ import com.kelab.experiment.dal.dao.ExperimentContestMapper;
 import com.kelab.experiment.dal.domain.ExperimentContestDomain;
 import com.kelab.experiment.dal.model.ExperimentContestModel;
 import com.kelab.experiment.dal.repo.ExperimentContestRepo;
+import com.kelab.info.experiment.query.ExperimentContestQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
@@ -25,8 +26,13 @@ public class ExperimentContestRepoImpl implements ExperimentContestRepo {
 
 
     @Override
-    public List<ExperimentContestDomain> queryByClassId(Integer classId) {
-        return convertToDomain(experimentContestMapper.queryByClassId(classId));
+    public List<ExperimentContestDomain> queryContest(ExperimentContestQuery query) {
+        return convertToDomain(experimentContestMapper.queryContest(query));
+    }
+
+    @Override
+    public Integer queryTotal(ExperimentContestQuery query) {
+        return experimentContestMapper.queryTotal(query);
     }
 
     @Override

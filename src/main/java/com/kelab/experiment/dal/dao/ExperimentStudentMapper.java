@@ -2,6 +2,7 @@ package com.kelab.experiment.dal.dao;
 
 import com.kelab.experiment.dal.model.ExperimentStudentModel;
 import com.kelab.info.base.query.PageQuery;
+import com.kelab.info.experiment.info.ExperimentReviewStudentInfo;
 import com.kelab.info.experiment.query.ExperimentStudentQuery;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -16,6 +17,11 @@ public interface ExperimentStudentMapper {
      * 只根据 classId 查询
      */
     List<ExperimentStudentModel> queryPage(@Param("query") ExperimentStudentQuery query);
+
+    /**
+     * 查询一个班级所有审核通过的学生
+     */
+    List<ExperimentStudentModel> queryAllByClassId(@Param("classId") Integer classId);
 
     List<ExperimentStudentModel> queryByIds(@Param("ids") List<Integer> ids);
 
@@ -32,7 +38,7 @@ public interface ExperimentStudentMapper {
 
     void save(@Param("record") ExperimentStudentModel record);
 
-    void update(@Param("record") ExperimentStudentModel record);
+    void update(@Param("record") ExperimentReviewStudentInfo record);
 
-    void delete(@Param("ids") List<Integer> ids);
+    void delete(@Param("record") ExperimentReviewStudentInfo record);
 }

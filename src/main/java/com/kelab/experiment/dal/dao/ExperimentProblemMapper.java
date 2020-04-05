@@ -14,7 +14,7 @@ public interface ExperimentProblemMapper {
 
     Integer queryTotal(@Param("query") ExperimentProblemQuery query);
 
-    List<ExperimentProblemModel> queryAllByContestId(@Param("contestId") Integer contestId);
+    List<ExperimentProblemModel> queryAllByContestIds(@Param("contestIds") List<Integer> contestIds);
 
     void deleteByContestId(@Param("contestId") Integer contestId);
 

@@ -10,13 +10,19 @@
     <sql id="Base_Column_List">
         `id`, `title`,`class_id`, `end_time`
     </sql>
-
-    <select id="queryByClassId" resultMap="BaseResultMap">
+    <sql id="limit_sql">
+        limit ${(query.page - 1) * query.rows}, ${query.rows}
+    </sql>
+    <select id="queryContest" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>
         from `Experiment_contest`
-        where `class_id` = #{classId, jdbcType=INTEGER}
+        where 1 = 1
+        <if test="query.classId != null">
+            and `class_id` = #{classId, jdbcType=INTEGER}
+        </if>
         order by `end_time` asc
+        <include refid="limit_sql"/>
     </select>
     <select id="queryByIds" resultMap="BaseResultMap">
         select
@@ -28,6 +34,15 @@
             #{item}
         </foreach>
     </select>
+    <select id="queryTotal" resultType="java.lang.Integer">
+        select
+        count(*)
+        from `Experiment_contest`
+        where 1 = 1
+        <if test="query.classId != null">
+            and `class_id` = #{classId, jdbcType=INTEGER}
+        </if>
+    </select>
 
     <insert id="save" keyProperty="id" useGeneratedKeys="true">
         insert into `Experiment_contest`
@@ -36,7 +51,7 @@
         (#{record.title, jdbcType=VARCHAR}, #{record.classId, jdbcType=INTEGER}, #{record.endTime, jdbcType=BIGINT})
     </insert>
 
-    <insert id="update" >
+    <insert id="update">
         update `Experiment_contest`
         <set>
             <if test="record.title != null">

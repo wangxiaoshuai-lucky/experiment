@@ -5,22 +5,24 @@ import com.kelab.experiment.convert.ExperimentContestConvert;
 import com.kelab.experiment.convert.ExperimentProblemConvert;
 import com.kelab.experiment.dal.domain.ExperimentContestDomain;
 import com.kelab.experiment.dal.domain.ExperimentProblemDomain;
+import com.kelab.experiment.dal.domain.ExperimentStudentDomain;
 import com.kelab.experiment.dal.repo.ExperimentContestRepo;
 import com.kelab.experiment.dal.repo.ExperimentProblemRepo;
+import com.kelab.experiment.dal.repo.ExperimentStudentRepo;
+import com.kelab.experiment.result.UserContestRankResult;
 import com.kelab.experiment.service.ExperimentContestService;
 import com.kelab.experiment.support.service.ProblemCenterService;
 import com.kelab.info.base.PaginationResult;
 import com.kelab.info.context.Context;
 import com.kelab.info.experiment.info.ExperimentContestInfo;
 import com.kelab.info.experiment.info.ExperimentProblemInfo;
+import com.kelab.info.experiment.query.ExperimentContestQuery;
 import com.kelab.info.experiment.query.ExperimentProblemQuery;
 import com.kelab.info.problemcenter.info.ProblemUserMarkInfo;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,24 +30,35 @@ public class ExperimentContestServiceImpl implements ExperimentContestService {
 
     private ExperimentContestRepo experimentContestRepo;
 
+    private ExperimentStudentRepo experimentStudentRepo;
+
     private ExperimentProblemRepo experimentProblemRepo;
 
     private ProblemCenterService problemCenterService;
 
     public ExperimentContestServiceImpl(ExperimentContestRepo experimentContestRepo,
+                                        ExperimentStudentRepo experimentStudentRepo,
                                         ExperimentProblemRepo experimentProblemRepo,
                                         ProblemCenterService problemCenterService) {
         this.experimentContestRepo = experimentContestRepo;
+        this.experimentStudentRepo = experimentStudentRepo;
         this.experimentProblemRepo = experimentProblemRepo;
         this.problemCenterService = problemCenterService;
     }
 
     @Override
-    public PaginationResult<ExperimentContestInfo> queryByClassId(Context context, Integer classId) {
+    public PaginationResult<ExperimentContestInfo> queryContest(Context context, ExperimentContestQuery query) {
         PaginationResult<ExperimentContestInfo> result = new PaginationResult<>();
-        List<ExperimentContestInfo> infos = convertToExContestInfo(experimentContestRepo.queryByClassId(classId));
-        result.setPagingList(infos);
-        result.setTotal(infos.size());
+        List<Integer> ids = CommonService.totalIds(query);
+        if (!CollectionUtils.isEmpty(ids)) {
+            List<ExperimentContestInfo> infos = convertToExContestInfo(context, experimentContestRepo.queryByIds(ids));
+            result.setPagingList(infos);
+            result.setTotal(infos.size());
+        } else if (query.getClassId() != null) {
+            List<ExperimentContestInfo> infos = convertToExContestInfo(context, experimentContestRepo.queryContest(query));
+            result.setPagingList(infos);
+            result.setTotal(experimentContestRepo.queryTotal(query));
+        }
         return result;
     }
 
@@ -93,11 +106,85 @@ public class ExperimentContestServiceImpl implements ExperimentContestService {
         return result;
     }
 
-    private List<ExperimentContestInfo> convertToExContestInfo(List<ExperimentContestDomain> domains) {
+    @Override
+    public PaginationResult<UserContestRankResult> queryRankByContestId(Context context, Integer contestId) {
+        // 获取题目
+        List<ExperimentContestDomain> contests = experimentContestRepo.queryByIds(Collections.singletonList(contestId));
+        Preconditions.checkArgument(!CollectionUtils.isEmpty(contests), "实验不存在");
+        ExperimentContestDomain contest = contests.get(0);
+        Map<Integer, List<ExperimentProblemDomain>> contestProblems = experimentProblemRepo.queryAllByContestIds(context, Collections.singletonList(contestId), false);
+        Preconditions.checkArgument(contestProblems.containsKey(contestId) && contestProblems.get(contestId).size() > 0, "实验题目不存在");
+        List<Integer> allProblemIds = contestProblems.get(contestId).stream().map(ExperimentProblemDomain::getProbId).collect(Collectors.toList());
+        // 所有学生
+        List<ExperimentStudentDomain> students = experimentStudentRepo.queryAllByClassId(context, contest.getClassId(), true);
+        List<Integer> userIds = students.stream().map(ExperimentStudentDomain::getUserId).collect(Collectors.toList());
+        // 所有ac记录
+        List<ProblemUserMarkInfo> userAcInfos = problemCenterService.queryByUserIdsAndProbIdsAndEndTime(context, userIds, allProblemIds, contest.getEndTime());
+        Map<Integer, Long> userAcNum = userAcInfos.stream().collect(Collectors.groupingBy(ProblemUserMarkInfo::getUserId, Collectors.counting()));
+        // 转换模型
+        PaginationResult<UserContestRankResult> result = new PaginationResult<>();
+        List<UserContestRankResult> userResult = students.stream().map(item -> {
+            UserContestRankResult single = new UserContestRankResult();
+            single.setAcNum(userAcNum.getOrDefault(item.getUserId(), 0L).intValue());
+            single.setUserId(item.getUserId());
+            single.setUserInfo(item.getStudentInfo());
+            single.setTotalNum(allProblemIds.size());
+            return single;
+        }).sorted((a, b) -> b.getAcNum().compareTo(a.getAcNum())).collect(Collectors.toList());
+        fillRank(userResult);
+        result.setTotal(userResult.size());
+        result.setPagingList(userResult);
+        return result;
+    }
+
+    /**
+     * 填充rank
+     */
+    private void fillRank(List<UserContestRankResult> userResult) {
+        UserContestRankResult pre = userResult.get(0);
+        pre.setRank(1);
+        for (int i = 0; i < userResult.size(); i++) {
+            UserContestRankResult single = userResult.get(i);
+            if (single.getAcNum().equals(pre.getAcNum())) {
+                single.setRank(pre.getRank());
+            } else {
+                single.setRank(i + 1);
+            }
+            pre = single;
+        }
+    }
+
+    private List<ExperimentContestInfo> convertToExContestInfo(Context context, List<ExperimentContestDomain> domains) {
         if (CollectionUtils.isEmpty(domains)) {
             return Collections.emptyList();
         }
-        return domains.stream().map(ExperimentContestConvert::domainToInfo).collect(Collectors.toList());
+        List<ExperimentContestInfo> contests = domains.stream().map(ExperimentContestConvert::domainToInfo).collect(Collectors.toList());
+        // 每个实验的题目列表
+        List<Integer> contestIds = contests.stream().map(ExperimentContestInfo::getId).collect(Collectors.toList());
+        Map<Integer, List<ExperimentProblemDomain>> contestProblems = experimentProblemRepo.queryAllByContestIds(context, contestIds, false);
+        // 获取所有的题目 ids
+        List<Integer> proIds = new ArrayList<>();
+        contestProblems.forEach((k, v) -> proIds.addAll(v.stream().map(ExperimentProblemDomain::getProbId).collect(Collectors.toList())));
+        // 截止时间 endTime， 缩小搜索的范围
+        long maxEndTime = 0L;
+        for (ExperimentContestInfo single : contests) {
+            maxEndTime = maxEndTime < single.getEndTime() ? single.getEndTime() : maxEndTime;
+        }
+        // 题目的 ac 记录
+        Map<Integer, ProblemUserMarkInfo> userAcMap = problemCenterService.queryByUserIdsAndProbIdsAndEndTime(context,
+                Collections.singletonList(context.getOperatorId()), proIds, maxEndTime)
+                .stream().collect(Collectors.toMap(ProblemUserMarkInfo::getProblemId, obj -> obj, (v1, v2) -> v2));
+        // 填充每个实验的进度
+        contests.forEach(singleContest -> {
+            List<ExperimentProblemDomain> problems = contestProblems.getOrDefault(singleContest.getId(), Collections.emptyList());
+            List<ExperimentProblemDomain> acProblems = problems.stream()
+                    .filter(singleProblem ->
+                            userAcMap.containsKey(singleProblem.getProbId()) && userAcMap.get(singleProblem.getProbId()).getMarkTime() < singleContest.getEndTime())
+                    .collect(Collectors.toList());
+            singleContest.setAcNum(acProblems.size());
+            singleContest.setTotalNum(problems.size());
+        });
+        return contests;
     }
 
     private List<ExperimentProblemInfo> convertToExProbInfo(List<ExperimentProblemDomain> domains) {

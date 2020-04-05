@@ -16,9 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository
@@ -57,11 +55,25 @@ public class ExperimentProblemRepoImpl implements ExperimentProblemRepo {
     }
 
     @Override
-    public List<ExperimentProblemDomain> queryAllByContestId(Context context, Integer contestId, boolean isFillTitle) {
-        String cacheObj = redisCache.cacheOne(CacheBizName.EXPERIMENT_PROBLEM_PAGE,
-                contestId, String.class,
-                missKey -> JSON.toJSONString(experimentProblemMapper.queryAllByContestId(missKey)));
-        return convertToDomain(context, JSON.parseArray(cacheObj, ExperimentProblemModel.class), isFillTitle);
+    public Map<Integer, List<ExperimentProblemDomain>> queryAllByContestIds(Context context, List<Integer> contestIds, boolean isFillTitle) {
+        // cacheObj : List< JSON(List<ExperimentProblemModel>)>
+        List<String> cacheObj = redisCache.cacheList(CacheBizName.EXPERIMENT_PROBLEM_PAGE,
+                contestIds, String.class,
+                missKeys -> {
+                    List<ExperimentProblemModel> problemModels = experimentProblemMapper.queryAllByContestIds(missKeys);
+                    if (CollectionUtils.isEmpty(problemModels)) {
+                        return null;
+                    }
+                    Map<Integer, List<ExperimentProblemModel>> collect = problemModels.stream().
+                            collect(Collectors.groupingBy(ExperimentProblemModel::getContestId, Collectors.toList()));
+                    Map<Integer, String> dbData = new HashMap<>();
+                    collect.forEach((k, v) -> dbData.put(k, JSON.toJSONString(v)));
+                    return dbData;
+                });
+        // convert to Map
+        Map<Integer, List<ExperimentProblemModel>> modelMap = cacheObj.stream().map(jsonList -> JSON.parseArray(jsonList, ExperimentProblemModel.class))
+                .collect(Collectors.toMap(item -> item.get(0).getContestId(), obj -> obj));
+        return convertToDomain(context, modelMap, isFillTitle);
     }
 
 
@@ -79,11 +91,30 @@ public class ExperimentProblemRepoImpl implements ExperimentProblemRepo {
             return Collections.emptyList();
         }
         List<ExperimentProblemDomain> domains = models.stream().map(ExperimentProblemConvert::modelToDomain).collect(Collectors.toList());
-        if (isFillTitle) {
+        if (context != null && isFillTitle) {
             Map<Integer, ProblemInfo> problemInfoMap = problemCenterService.queryByProIds(context,
                     domains.stream().map(ExperimentProblemDomain::getProbId).collect(Collectors.toList()));
             domains.forEach(item -> item.setTitle(problemInfoMap.getOrDefault(item.getProbId(), new ProblemInfo()).getTitle()));
         }
         return domains;
+    }
+
+    private Map<Integer, List<ExperimentProblemDomain>> convertToDomain(Context context, Map<Integer, List<ExperimentProblemModel>> modelMap, boolean isFillTitle) {
+        if (CollectionUtils.isEmpty(modelMap)) {
+            return Collections.emptyMap();
+        }
+        Map<Integer, List<ExperimentProblemDomain>> result = new HashMap<>();
+        modelMap.forEach((k, v) -> {
+            List<ExperimentProblemDomain> domains = v.stream().map(ExperimentProblemConvert::modelToDomain).collect(Collectors.toList());
+            result.put(k, domains);
+        });
+        if (context != null && isFillTitle) {
+            // 记录所有的题目 id
+            List<Integer> proIds = new ArrayList<>();
+            modelMap.forEach((k, v) -> proIds.addAll(v.stream().map(ExperimentProblemModel::getProbId).collect(Collectors.toList())));
+            Map<Integer, ProblemInfo> problemInfoMap = problemCenterService.queryByProIds(context, proIds);
+            result.forEach((k, v) -> v.forEach(item -> item.setTitle(problemInfoMap.getOrDefault(item.getProbId(), new ProblemInfo()).getTitle())));
+        }
+        return result;
     }
 }
