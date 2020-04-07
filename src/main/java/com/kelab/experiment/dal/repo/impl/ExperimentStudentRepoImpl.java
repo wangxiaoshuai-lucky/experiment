@@ -11,6 +11,7 @@ import com.kelab.experiment.dal.redis.RedisCache;
 import com.kelab.experiment.dal.repo.ExperimentStudentRepo;
 import com.kelab.experiment.support.service.UserCenterService;
 import com.kelab.info.context.Context;
+import com.kelab.info.experiment.info.ExperimentChangeGroupInfo;
 import com.kelab.info.experiment.info.ExperimentReviewStudentInfo;
 import com.kelab.info.experiment.query.ExperimentStudentQuery;
 import com.kelab.info.usercenter.info.UserInfo;
@@ -105,7 +106,17 @@ public class ExperimentStudentRepoImpl implements ExperimentStudentRepo {
     @Override
     public void resetGroup(Integer classId,  List<Integer> groupIds) {
         experimentStudentMapper.resetGroup(classId, groupIds);
-        redisCache.deleteByPre(CacheBizName.EXPERIMENT_STUDENT_PAGE, getClass() + "::" + ApplyClassStatus.ALLOWED.value());
+        redisCache.deleteByPre(CacheBizName.EXPERIMENT_STUDENT_PAGE, classId + "::" + ApplyClassStatus.ALLOWED.value());
+    }
+
+    @Override
+    public void changeGroup(ExperimentChangeGroupInfo record) {
+        // 查询学生班级
+        List<ExperimentStudentModel> students = experimentStudentMapper.queryByIds(Collections.singletonList(record.getExperimentStudentId()));
+        if (!CollectionUtils.isEmpty(students)) {
+            experimentStudentMapper.changeGroup(record);
+            redisCache.deleteByPre(CacheBizName.EXPERIMENT_STUDENT_PAGE, students.get(0).getClassId() + "::" + ApplyClassStatus.ALLOWED.value());
+        }
     }
 
     private List<ExperimentStudentDomain> convertToDomain(Context context, List<ExperimentStudentModel> models, boolean isFillUserInfo) {

@@ -113,4 +113,10 @@
             #{item}
         </foreach>
     </update>
+
+    <update id="changeGroup">
+        update `Experiment_student`
+        set `group_id` = #{record.groupId}
+        where `id` = #{record.experimentStudentId}
+    </update>
 </mapper>

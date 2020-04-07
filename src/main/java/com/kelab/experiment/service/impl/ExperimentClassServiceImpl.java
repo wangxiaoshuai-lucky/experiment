@@ -136,6 +136,16 @@ public class ExperimentClassServiceImpl implements ExperimentClassService {
         }
     }
 
+    @Override
+    public PaginationResult<ExperimentStudentInfo> queryAllStudentWithoutGroup(Context context, Integer classId) {
+        List<ExperimentStudentDomain> student = experimentStudentRepo.queryAllByClassId(context, classId, true);
+        List<ExperimentStudentInfo> withoutGroupStudents = convertToStudentInfo(student.stream().filter(item -> item.getGroupId() == 0).collect(Collectors.toList()));
+        PaginationResult<ExperimentStudentInfo> result = new PaginationResult<>();
+        result.setTotal(withoutGroupStudents.size());
+        result.setPagingList(withoutGroupStudents);
+        return result;
+    }
+
     private List<ExperimentClassInfo> convertToInfo(List<ExperimentClassDomain> domains) {
         if (CollectionUtils.isEmpty(domains)) {
             return Collections.emptyList();

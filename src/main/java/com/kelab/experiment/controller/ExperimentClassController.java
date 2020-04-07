@@ -2,7 +2,6 @@ package com.kelab.experiment.controller;
 
 import cn.wzy.verifyUtils.annotation.Verify;
 import com.kelab.experiment.convert.ExperimentClassConvert;
-import com.kelab.experiment.convert.ExperimentStudentConvert;
 import com.kelab.experiment.service.ExperimentClassService;
 import com.kelab.info.base.JsonAndModel;
 import com.kelab.info.base.constant.StatusMsgConstant;
@@ -93,6 +92,17 @@ public class ExperimentClassController {
     public JsonAndModel queryStudentPage(Context context, ExperimentStudentQuery query) {
         return JsonAndModel.builder(StatusMsgConstant.SUCCESS)
                 .data(experimentClassService.queryStudentPage(context, query))
+                .build();
+    }
+
+    /**
+     * 查询班级未分组学生
+     */
+    @GetMapping("/experiment/class/noGroupStudents.do")
+    @Verify(notNull = "*")
+    public JsonAndModel queryAllStudentWithoutGroup(Context context, Integer classId) {
+        return JsonAndModel.builder(StatusMsgConstant.SUCCESS)
+                .data(experimentClassService.queryAllStudentWithoutGroup(context, classId))
                 .build();
     }
 

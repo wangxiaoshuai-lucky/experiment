@@ -8,6 +8,7 @@ import com.kelab.info.experiment.info.ExperimentStudentInfo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,6 +41,8 @@ public class ExperimentGroupConvert {
         if (!CollectionUtils.isEmpty(domain.getMembers())) {
             List<ExperimentStudentInfo> members = domain.getMembers().stream().map(ExperimentStudentConvert::domainToInfo).collect(Collectors.toList());
             info.setMembers(members);
+        }else {
+            info.setMembers(Collections.emptyList());
         }
         return info;
     }
@@ -53,6 +56,8 @@ public class ExperimentGroupConvert {
         if (!CollectionUtils.isEmpty(info.getMembers())) {
             List<ExperimentStudentDomain> members = info.getMembers().stream().map(ExperimentStudentConvert::infoToDomain).collect(Collectors.toList());
             domain.setMembers(members);
+        } else {
+            domain.setMembers(Collections.emptyList());
         }
         return domain;
     }

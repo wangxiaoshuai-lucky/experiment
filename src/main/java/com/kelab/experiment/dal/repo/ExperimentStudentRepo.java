@@ -2,6 +2,7 @@ package com.kelab.experiment.dal.repo;
 
 import com.kelab.experiment.dal.domain.ExperimentStudentDomain;
 import com.kelab.info.context.Context;
+import com.kelab.info.experiment.info.ExperimentChangeGroupInfo;
 import com.kelab.info.experiment.info.ExperimentReviewStudentInfo;
 import com.kelab.info.experiment.query.ExperimentStudentQuery;
 
@@ -58,4 +59,9 @@ public interface ExperimentStudentRepo {
      * 重置分组，在删除分组的时候调用
      */
     void resetGroup(Integer classId, List<Integer> groupIds);
+
+    /**
+     * 切换分组
+     */
+    void changeGroup(ExperimentChangeGroupInfo record);
 }

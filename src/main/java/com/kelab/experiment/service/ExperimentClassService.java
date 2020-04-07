@@ -1,7 +1,6 @@
 package com.kelab.experiment.service;
 
 import com.kelab.experiment.dal.domain.ExperimentClassDomain;
-import com.kelab.experiment.dal.domain.ExperimentStudentDomain;
 import com.kelab.info.base.PaginationResult;
 import com.kelab.info.context.Context;
 import com.kelab.info.experiment.info.ExperimentClassInfo;
@@ -53,4 +52,9 @@ public interface ExperimentClassService {
      * 审核学生的加班
      */
     void reviewStudentApply(Context context, ExperimentReviewStudentInfo record);
+
+    /**
+     * 查询所有未分组的学生名单
+     */
+    PaginationResult<ExperimentStudentInfo> queryAllStudentWithoutGroup(Context context, Integer classId);
 }
