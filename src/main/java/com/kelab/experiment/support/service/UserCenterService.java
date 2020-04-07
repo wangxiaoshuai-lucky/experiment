@@ -24,9 +24,9 @@ public class UserCenterService {
     }
 
     public Map<Integer, UserInfo> queryByUserIds(Context context, List<Integer> ids) {
-        Map<String, Object> param = new HashMap<>();
-        param.put("ids", Strings.collectionToCommaDelimitedString(ids));
-        List<UserInfo> userInfos = userCenterServiceSender.queryByUserIds(ParamBuilder.buildParam(context, param));
+        List<UserInfo> userInfos = userCenterServiceSender.queryByUserIds(
+                ParamBuilder.buildParam(context)
+                        .param("ids", Strings.collectionToCommaDelimitedString(ids)));
         if (CollectionUtils.isEmpty(userInfos)) {
             return Collections.emptyMap();
         }

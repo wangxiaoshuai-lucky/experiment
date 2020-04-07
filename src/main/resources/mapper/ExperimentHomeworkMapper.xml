@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kelab.experiment.dal.dao.ExperimentHomeworkMapper">
+    <resultMap id="BaseResultMap" type="com.kelab.experiment.dal.model.ExperimentHomeworkModel">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="class_id" property="classId" jdbcType="INTEGER"/>
+        <result column="title" property="title" jdbcType="VARCHAR"/>
+        <result column="content" property="content" jdbcType="VARCHAR"/>
+        <result column="attach_name" property="attachName" jdbcType="VARCHAR"/>
+        <result column="attach_url" property="attachUrl" jdbcType="VARCHAR"/>
+        <result column="type" property="type" jdbcType="TINYINT"/>
+        <result column="end_time" property="endTime" jdbcType="BIGINT"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        `id`, `class_id`,`title`, `content`, `attach_name`, `attach_url`, `type`, `end_time`
+    </sql>
+    <sql id="limit_sql">
+        limit ${(query.page - 1) * query.rows}, ${query.rows}
+    </sql>
+    <insert id="save">
+        insert into `Experiment_homework`
+        (`class_id`,`title`, `content`, `attach_name`, `attach_url`, `type`, `end_time`)
+        values
+        (
+        #{record.classId},
+        #{record.title},
+        #{record.content},
+        #{record.attachName},
+        #{record.attachUrl},
+        #{record.type},
+        #{record.endTime}
+        )
+    </insert>
+    <update id="update">
+        update `Experiment_homework`
+        <set>
+            <if test="record.title != null">
+                `title` = #{record.title},
+            </if>
+            <if test="record.content != null">
+                `content` = #{record.content},
+            </if>
+            <if test="record.attachName != null">
+                `attach_name` = #{record.attachName},
+            </if>
+            <if test="record.attachUrl != null">
+                `attach_url` = #{record.attachUrl},
+            </if>
+            <if test="record.type != null">
+                `type` = #{record.type},
+            </if>
+            <if test="record.endTime != null">
+                `end_time` = #{record.endTime},
+            </if>
+        </set>
+        where `id` = #{record.id}
+    </update>
+
+    <select id="queryPage" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from `Experiment_homework`
+        where 1 = 1
+        <if test="query.classId != null">
+            and `class_id` = #{query.classId, jdbcType=INTEGER}
+        </if>
+        order by `end_time` asc
+        <include refid="limit_sql"/>
+    </select>
+
+    <select id="queryAllByClassId" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from `Experiment_homework`
+        where and `class_id` = #{classId, jdbcType=INTEGER}
+        order by `end_time` asc
+    </select>
+
+    <select id="queryByIds" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from `Experiment_homework`
+        where `id` in
+        <foreach collection="ids" item="item"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <delete id="delete">
+        delete from `Experiment_homework`
+        where `id` in
+        <foreach collection="ids" item="item"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
+
+
+    <select id="queryTotal" resultType="java.lang.Integer">
+        select
+        count(*)
+        from `Experiment_homework`
+        where 1 = 1
+        <if test="query.classId != null">
+            and `class_id` = #{query.classId, jdbcType=INTEGER}
+        </if>
+    </select>
+
+</mapper>

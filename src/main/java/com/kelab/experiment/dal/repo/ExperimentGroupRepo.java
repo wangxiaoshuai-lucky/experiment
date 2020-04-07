@@ -12,7 +12,7 @@ public interface ExperimentGroupRepo {
     /**
      * 班级所有分组
      */
-    List<ExperimentGroupDomain> queryAllByClassId(Context context, Integer classId);
+    List<ExperimentGroupDomain> queryAllByClassId(Context context, Integer classId, boolean isFillUserInfo);
 
     /**
      * 创建分组

@@ -32,8 +32,8 @@ public class ExperimentGroupRepoImpl implements ExperimentGroupRepo {
     }
 
     @Override
-    public List<ExperimentGroupDomain> queryAllByClassId(Context context, Integer classId) {
-        return convertToDomain(context, experimentGroupMapper.queryAllByClassId(classId));
+    public List<ExperimentGroupDomain> queryAllByClassId(Context context, Integer classId, boolean isFillUserInfo) {
+        return convertToDomain(context, experimentGroupMapper.queryAllByClassId(classId), isFillUserInfo);
     }
 
     @Override
@@ -56,12 +56,12 @@ public class ExperimentGroupRepoImpl implements ExperimentGroupRepo {
         }
     }
 
-    private List<ExperimentGroupDomain> convertToDomain(Context context, List<ExperimentGroupModel> models) {
+    private List<ExperimentGroupDomain> convertToDomain(Context context, List<ExperimentGroupModel> models, boolean isFillUserInfo) {
         if (CollectionUtils.isEmpty(models)) {
             return Collections.emptyList();
         }
         List<ExperimentGroupDomain> domains = models.stream().map(ExperimentGroupConvert::modelToDomain).collect(Collectors.toList());
-        List<ExperimentStudentDomain> users = experimentStudentRepo.queryAllByClassId(context, models.get(0).getClassId(), true);
+        List<ExperimentStudentDomain> users = experimentStudentRepo.queryAllByClassId(context, models.get(0).getClassId(), isFillUserInfo);
         if (CollectionUtils.isEmpty(users)) {
             return domains;
         }

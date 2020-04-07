@@ -31,7 +31,7 @@ public class ExperimentGroupServiceImpl implements ExperimentGroupService {
 
     @Override
     public PaginationResult<ExperimentGroupInfo> queryAllGroup(Context context, Integer classId) {
-        List<ExperimentGroupInfo> infos = convertToInfo(experimentGroupRepo.queryAllByClassId(context, classId));
+        List<ExperimentGroupInfo> infos = convertToInfo(experimentGroupRepo.queryAllByClassId(context, classId, true));
         PaginationResult<ExperimentGroupInfo> result = new PaginationResult<>();
         result.setPagingList(infos);
         result.setTotal(infos.size());

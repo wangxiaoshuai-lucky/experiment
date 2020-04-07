@@ -124,8 +124,8 @@ public class ExperimentStudentRepoImpl implements ExperimentStudentRepo {
             return Collections.emptyList();
         }
         List<ExperimentStudentDomain> domains = models.stream().map(ExperimentStudentConvert::modelToDomain).collect(Collectors.toList());
-        // fill teacher info
-        if (isFillUserInfo) {
+        // fill student info
+        if (context != null && isFillUserInfo) {
             List<Integer> userIds = domains.stream().map(ExperimentStudentDomain::getUserId).collect(Collectors.toList());
             Map<Integer, UserInfo> userInfoMap = userCenterService.queryByUserIds(context, userIds);
             domains.forEach(item -> item.setStudentInfo(userInfoMap.get(item.getUserId())));

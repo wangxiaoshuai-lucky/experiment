@@ -8,14 +8,21 @@ import java.util.Map;
 @SuppressWarnings("unchecked")
 public class ParamBuilder {
 
-    public static Map<String, Object> buildParam(Object... params) {
-        Map<String, Object> contextParam = new HashMap<>();
+    public static class Param extends HashMap<String, Object> {
+        public Param param(String key, Object value) {
+            put(key, value);
+            return this;
+        }
+    }
+
+    public static Param buildParam(Object... params) {
+        Param param = new Param();
         if (params != null) {
             for (Object obj: params) {
                 Map<String, Object> objectMap = JSON.parseObject(JSON.toJSONString(obj), Map.class);
-                contextParam.putAll(objectMap);
+                param.putAll(objectMap);
             }
         }
-        return contextParam;
+        return param;
     }
 }

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kelab.experiment.dal.dao.ExperimentStudentHomeworkMapper">
+    <resultMap id="BaseResultMap" type="com.kelab.experiment.dal.model.ExperimentStudentHomeworkModel">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="homework_id" property="homeworkId" jdbcType="INTEGER"/>
+        <result column="target_id" property="targetId" jdbcType="INTEGER"/>
+        <result column="attach_name" property="attachName" jdbcType="VARCHAR"/>
+        <result column="attach_url" property="attachUrl" jdbcType="VARCHAR"/>
+        <result column="post_time" property="postTime" jdbcType="BIGINT"/>
+        <result column="score" property="score" jdbcType="INTEGER"/>
+        <result column="comment" property="comment" jdbcType="VARCHAR"/>
+        <result column="comment_time" property="commentTime" jdbcType="BIGINT"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        `id`, `homework_id`,`target_id`, `attach_name`, `attach_url`, `post_time`, `score`, `comment`, `comment_time`
+    </sql>
+    <sql id="limit_sql">
+        limit ${(query.page - 1) * query.rows}, ${query.rows}
+    </sql>
+    <insert id="save">
+        insert into `Experiment_student_homework`
+        (`homework_id`,`target_id`, `attach_name`, `attach_url`, `post_time`)
+        values
+        (
+        #{record.homeworkId},
+        #{record.targetId},
+        #{record.attachName},
+        #{record.attachUrl},
+        #{record.postTime},
+        )
+    </insert>
+    <update id="update">
+        update `Experiment_student_homework`
+        <set>
+            -- 学生修改字段
+            <if test="record.attachName != null">
+                `attach_name` = #{record.attachName},
+            </if>
+            <if test="record.attachUrl != null">
+                `attach_url` = #{record.attachUrl},
+            </if>
+            <if test="record.postTime != null">
+                `post_time` = #{record.postTime},
+            </if>
+            -- 教师修改字段
+            <if test="record.score != null">
+                `score` = #{record.score},
+            </if>
+            <if test="record.comment != null">
+                `comment` = #{record.comment},
+            </if>
+            <if test="record.commentTime != null">
+                `comment_time` = #{record.commentTime},
+            </if>
+        </set>
+        where `id` = #{record.id}
+    </update>
+
+    <select id="queryPage" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from `Experiment_student_homework`
+        where 1 = 1
+        <if test="query.homeworkId != null">
+            and `homework_id` = #{query.homeworkId, jdbcType=INTEGER}
+        </if>
+        <if test="query.isComment == true">
+            and `score` != 0
+        </if>
+        <if test="query.isComment == false">
+            and `score` == 0
+        </if>
+        <include refid="limit_sql"/>
+    </select>
+
+    <select id="queryAllByHomeworkIdsAndTargetIds" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from `Experiment_student_homework`
+        where `homework_id` in
+        <foreach collection="homeworkIds" item="item"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        and `target_id` in
+        <foreach collection="targetIds" item="item"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+
+    <select id="queryTotal" resultType="java.lang.Integer">
+        select
+        count(*)
+        from `Experiment_student_homework`
+        where 1 = 1
+        <if test="query.homeworkId != null">
+            and `homework_id` = #{query.homeworkId, jdbcType=INTEGER}
+        </if>
+        <if test="query.isComment == true">
+            and `score` != 0
+        </if>
+        <if test="query.isComment == false">
+            and `score` == 0
+        </if>
+    </select>
+
+</mapper>

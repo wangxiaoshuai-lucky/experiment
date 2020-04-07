@@ -19,6 +19,7 @@ import com.kelab.info.experiment.info.ExperimentProblemInfo;
 import com.kelab.info.experiment.query.ExperimentContestQuery;
 import com.kelab.info.experiment.query.ExperimentProblemQuery;
 import com.kelab.info.problemcenter.info.ProblemUserMarkInfo;
+import com.kelab.info.problemcenter.info.ProblemUserMarkInnerInfo;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -93,11 +94,11 @@ public class ExperimentContestServiceImpl implements ExperimentContestService {
         ExperimentContestDomain nowContest = contests.get(0);
         List<ExperimentProblemDomain> problemDomains = experimentProblemRepo.queryPage(context, query, true);
         // 填充是否ac
-        List<ProblemUserMarkInfo> userAcInfos = problemCenterService.queryByUserIdsAndProbIdsAndEndTime(context,
+        List<ProblemUserMarkInnerInfo> userAcInfos = problemCenterService.queryByUserIdsAndProbIdsAndEndTime(context,
                 Collections.singletonList(context.getOperatorId()),
                 problemDomains.stream().map(ExperimentProblemDomain::getProbId).collect(Collectors.toList()),
                 nowContest.getEndTime());
-        Set<Integer> acProbSet = userAcInfos.stream().map(ProblemUserMarkInfo::getProblemId).collect(Collectors.toSet());
+        Set<Integer> acProbSet = userAcInfos.stream().map(ProblemUserMarkInnerInfo::getProblemId).collect(Collectors.toSet());
         problemDomains.forEach(item -> item.setAc(acProbSet.contains(item.getProbId())));
         // 返回结果
         PaginationResult<ExperimentProblemInfo> result = new PaginationResult<>();
@@ -125,8 +126,8 @@ public class ExperimentContestServiceImpl implements ExperimentContestService {
         }
         List<Integer> userIds = students.stream().map(ExperimentStudentDomain::getUserId).collect(Collectors.toList());
         // 所有ac记录
-        List<ProblemUserMarkInfo> userAcInfos = problemCenterService.queryByUserIdsAndProbIdsAndEndTime(context, userIds, allProblemIds, contest.getEndTime());
-        Map<Integer, Long> userAcNum = userAcInfos.stream().collect(Collectors.groupingBy(ProblemUserMarkInfo::getUserId, Collectors.counting()));
+        List<ProblemUserMarkInnerInfo> userAcInfos = problemCenterService.queryByUserIdsAndProbIdsAndEndTime(context, userIds, allProblemIds, contest.getEndTime());
+        Map<Integer, Long> userAcNum = userAcInfos.stream().collect(Collectors.groupingBy(ProblemUserMarkInnerInfo::getUserId, Collectors.counting()));
         // 转换模型
         PaginationResult<UserContestRankResult> result = new PaginationResult<>();
         List<UserContestRankResult> userResult = students.stream().map(item -> {
@@ -177,9 +178,9 @@ public class ExperimentContestServiceImpl implements ExperimentContestService {
             maxEndTime = maxEndTime < single.getEndTime() ? single.getEndTime() : maxEndTime;
         }
         // 题目的 ac 记录
-        Map<Integer, ProblemUserMarkInfo> userAcMap = problemCenterService.queryByUserIdsAndProbIdsAndEndTime(context,
+        Map<Integer, ProblemUserMarkInnerInfo> userAcMap = problemCenterService.queryByUserIdsAndProbIdsAndEndTime(context,
                 Collections.singletonList(context.getOperatorId()), proIds, maxEndTime)
-                .stream().collect(Collectors.toMap(ProblemUserMarkInfo::getProblemId, obj -> obj, (v1, v2) -> v2));
+                .stream().collect(Collectors.toMap(ProblemUserMarkInnerInfo::getProblemId, obj -> obj, (v1, v2) -> v2));
         // 填充每个实验的进度
         contests.forEach(singleContest -> {
             List<ExperimentProblemDomain> problems = contestProblems.getOrDefault(singleContest.getId(), Collections.emptyList());
