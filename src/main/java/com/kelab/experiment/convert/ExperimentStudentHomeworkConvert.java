@@ -31,6 +31,9 @@ public class ExperimentStudentHomeworkConvert {
         }
         ExperimentStudentHomeworkInfo info = new ExperimentStudentHomeworkInfo();
         BeanUtils.copyProperties(domain, info);
+        if (domain.getPostGroupInfo() != null) {
+            info.setPostGroupInfo(ExperimentGroupConvert.domainToInfo(domain.getPostGroupInfo()));
+        }
         return info;
     }
 

@@ -3,4 +3,6 @@ package com.kelab.experiment.constant.enums;
 public enum CacheBizName {
     LOG,
     EXPERIMENT_PROBLEM_PAGE,EXPERIMENT_STUDENT_PAGE,
+    EXPERIMENT_GROUP_PAGE, EXPERIMENT_GROUP,
+    EXPERIMENT_HOMEWORK_PAGE, EXPERIMENT_HOMEWORK
 }

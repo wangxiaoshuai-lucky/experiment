@@ -74,6 +74,17 @@
         <include refid="limit_sql"/>
     </select>
 
+    <select id="queryByIds" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from `Experiment_student_homework`
+        where `id` in
+        <foreach collection="ids" item="item"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
     <select id="queryAllByHomeworkIdsAndTargetIds" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>
@@ -106,5 +117,10 @@
             and `score` == 0
         </if>
     </select>
+
+    <delete id="deleteByHomeworkId">
+        delete from `Experiment_student_homework`
+        where `homework_id` = #{homeworkId, jdbcType=INTEGER}
+    </delete>
 
 </mapper>

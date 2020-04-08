@@ -16,11 +16,16 @@
         from `Experiment_group`
         where `class_id` = #{classId, jdbcType=INTEGER}
     </select>
-    <select id="queryById" resultMap="BaseResultMap">
+
+    <select id="queryByIds" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>
         from `Experiment_group`
-        where `id` = #{id, jdbcType=INTEGER}
+        where `id` in
+        <foreach collection="ids" item="item"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
     </select>
 
 

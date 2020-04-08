@@ -4,7 +4,9 @@ import com.kelab.experiment.dal.domain.ExperimentHomeworkDomain;
 import com.kelab.info.base.PaginationResult;
 import com.kelab.info.context.Context;
 import com.kelab.info.experiment.info.ExperimentHomeworkInfo;
+import com.kelab.info.experiment.info.ExperimentStudentHomeworkInfo;
 import com.kelab.info.experiment.query.ExperimentHomeworkQuery;
+import com.kelab.info.experiment.query.ExperimentStudentHomeworkQuery;
 
 import java.util.List;
 
@@ -29,5 +31,11 @@ public interface ExperimentHomeworkService {
      * 删除作业
      */
     void deleteHomework(Context context, List<Integer> ids);
+
+
+    /**
+     * 分页查询学生提交的作业
+     */
+    PaginationResult<ExperimentStudentHomeworkInfo> queryStudentHomeworkPage(Context context, ExperimentStudentHomeworkQuery query);
 
 }

@@ -15,9 +15,9 @@ public interface ExperimentGroupMapper {
     List<ExperimentGroupModel> queryAllByClassId(@Param("classId") Integer classId);
 
     /**
-     * 查询分组信息
+     * 通过ids查询
      */
-    ExperimentGroupModel queryById(@Param("id") Integer id);
+    List<ExperimentGroupModel> queryByIds(@Param("ids") List<Integer> ids);
 
 
     void save(@Param("record") ExperimentGroupModel record);

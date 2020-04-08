@@ -3,6 +3,7 @@ package com.kelab.experiment.service.impl;
 import com.google.common.base.Preconditions;
 import com.kelab.experiment.constant.enums.HomeWorkType;
 import com.kelab.experiment.convert.ExperimentHomeworkConvert;
+import com.kelab.experiment.convert.ExperimentStudentHomeworkConvert;
 import com.kelab.experiment.dal.domain.ExperimentGroupDomain;
 import com.kelab.experiment.dal.domain.ExperimentHomeworkDomain;
 import com.kelab.experiment.dal.domain.ExperimentStudentDomain;
@@ -15,11 +16,16 @@ import com.kelab.experiment.service.ExperimentHomeworkService;
 import com.kelab.info.base.PaginationResult;
 import com.kelab.info.context.Context;
 import com.kelab.info.experiment.info.ExperimentHomeworkInfo;
+import com.kelab.info.experiment.info.ExperimentStudentHomeworkInfo;
 import com.kelab.info.experiment.query.ExperimentHomeworkQuery;
+import com.kelab.info.experiment.query.ExperimentStudentHomeworkQuery;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -69,6 +75,12 @@ public class ExperimentHomeworkServiceImpl implements ExperimentHomeworkService 
     @Override
     public void updateHomework(Context context, ExperimentHomeworkDomain record) {
         checkGroup(record);
+        List<ExperimentHomeworkDomain> old = experimentHomeworkRepo.queryByIds(Collections.singletonList(record.getId()));
+        Preconditions.checkArgument(!CollectionUtils.isEmpty(old), "作业不存在");
+        // 如果更改了作业的类型，那么删除之前所有的提交作业
+        if (record.getType() != null && record.getType() != old.get(0).getType()) {
+            experimentStudentHomeworkRepo.deleteByHomeworkId(old.get(0).getId());
+        }
         experimentHomeworkRepo.update(record);
     }
 
@@ -86,6 +98,32 @@ public class ExperimentHomeworkServiceImpl implements ExperimentHomeworkService 
         experimentHomeworkRepo.delete(ids);
     }
 
+    @Override
+    public PaginationResult<ExperimentStudentHomeworkInfo> queryStudentHomeworkPage(Context context, ExperimentStudentHomeworkQuery query) {
+        PaginationResult<ExperimentStudentHomeworkInfo> result = new PaginationResult<>();
+        // 获取作业的布置信息
+        List<ExperimentHomeworkDomain> homework = experimentHomeworkRepo.queryByIds(Collections.singletonList(query.getHomeworkId()));
+        Preconditions.checkArgument(!CollectionUtils.isEmpty(homework), "作业不存在");
+        List<Integer> ids = CommonService.totalIds(query);
+        if (CollectionUtils.isEmpty(ids)) {
+            List<ExperimentStudentHomeworkInfo> infos = convertToStudentHomeworkInfo(context, experimentStudentHomeworkRepo.queryPage(context, query, true));
+            result.setPagingList(infos);
+            result.setTotal(experimentStudentHomeworkRepo.queryTotal(query));
+        } else {
+            List<ExperimentStudentHomeworkInfo> infos = convertToStudentHomeworkInfo(context, experimentStudentHomeworkRepo.queryByIds(context, ids, true));
+            result.setPagingList(infos);
+            result.setTotal(infos.size());
+        }
+        return result;
+    }
+
+    private List<ExperimentStudentHomeworkInfo> convertToStudentHomeworkInfo(Context context, List<ExperimentStudentHomeworkDomain> domains) {
+        if (CollectionUtils.isEmpty(domains)) {
+            return Collections.emptyList();
+        }
+        return domains.stream().map(ExperimentStudentHomeworkConvert::domainToInfo).collect(Collectors.toList());
+    }
+
     private List<ExperimentHomeworkInfo> convertToInfo(Context context, List<ExperimentHomeworkDomain> domains) {
         if (CollectionUtils.isEmpty(domains)) {
             return Collections.emptyList();
@@ -93,9 +131,10 @@ public class ExperimentHomeworkServiceImpl implements ExperimentHomeworkService 
         // 填充自己的作业信息
         // 查询自己所在分组信息，查询分组作业
         ExperimentStudentDomain studentDomain = experimentStudentRepo.queryByUserIdAndClassId(context.getOperatorId(), domains.get(0).getClassId());
-        List<ExperimentStudentHomeworkDomain> studentHomework = experimentStudentHomeworkRepo.queryAllByHomeworkIdsAndTargetIds(
+        List<ExperimentStudentHomeworkDomain> studentHomework = experimentStudentHomeworkRepo.queryAllByHomeworkIdsAndTargetIds(context,
                 domains.stream().map(ExperimentHomeworkDomain::getId).collect(Collectors.toList()),
-                Arrays.asList(context.getOperatorId(), studentDomain.getGroupId()));
+                Arrays.asList(context.getOperatorId(), studentDomain.getGroupId()),
+                true);
         // Map<作业 ID::提交人 ID, 学生作业> 这里的 targetId 有可能是用户 id 也有可能是分组 id
         Map<String, ExperimentStudentHomeworkDomain> studentHomeworkMap = studentHomework.stream().collect(
                 Collectors.toMap(item -> item.getHomeworkId() + "::" + item.getTargetId(), obj -> obj, (v1, v2) -> v2));
@@ -110,6 +149,7 @@ public class ExperimentHomeworkServiceImpl implements ExperimentHomeworkService 
                 default:
             }
         });
+        // todo 填充已交数量和总数量
         return domains.stream().map(ExperimentHomeworkConvert::domainToInfo).collect(Collectors.toList());
     }
 }

@@ -15,6 +15,11 @@ public interface ExperimentGroupRepo {
     List<ExperimentGroupDomain> queryAllByClassId(Context context, Integer classId, boolean isFillUserInfo);
 
     /**
+     * 通过ids查询
+     */
+    List<ExperimentGroupDomain> queryByIds(Context context, List<Integer> ids, boolean isFillUserInfo);
+
+    /**
      * 创建分组
      */
     void save(ExperimentGroupDomain record);

@@ -8,6 +8,7 @@ import com.kelab.info.base.constant.StatusMsgConstant;
 import com.kelab.info.context.Context;
 import com.kelab.info.experiment.info.ExperimentHomeworkInfo;
 import com.kelab.info.experiment.query.ExperimentHomeworkQuery;
+import com.kelab.info.experiment.query.ExperimentStudentHomeworkQuery;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -67,5 +68,19 @@ public class ExperimentHomeworkController {
     public JsonAndModel deleteHomework(Context context, @RequestParam("ids") List<Integer> ids) {
         experimentHomeworkService.deleteHomework(context, ids);
         return JsonAndModel.builder(StatusMsgConstant.SUCCESS).build();
+    }
+
+    /**
+     * 查询学生提交的作业列表
+     */
+    @GetMapping("/experiment/class/studentHomework.do")
+    @Verify(
+            notNull = {"context.operatorId", "context.operatorRoleId", "query.homeworkId"},
+            numberLimit = {"query.page [1, 1000]", "query.rows [1, 10000]"}
+    )
+    public JsonAndModel queryStudentHomeworkPage(Context context, ExperimentStudentHomeworkQuery query) {
+        return JsonAndModel.builder(StatusMsgConstant.SUCCESS)
+                .data(experimentHomeworkService.queryStudentHomeworkPage(context, query))
+                .build();
     }
 }

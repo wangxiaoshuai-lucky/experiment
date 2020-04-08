@@ -12,6 +12,8 @@ public interface ExperimentStudentHomeworkMapper {
 
     List<ExperimentStudentHomeworkModel> queryPage(@Param("query") ExperimentStudentHomeworkQuery query);
 
+    List<ExperimentStudentHomeworkModel> queryByIds(@Param("ids") List<Integer> ids);
+
     Integer queryTotal(@Param("query") ExperimentStudentHomeworkQuery query);
 
     List<ExperimentStudentHomeworkModel> queryAllByHomeworkIdsAndTargetIds(@Param("homeworkIds") List<Integer> homeworkIds,
@@ -20,4 +22,6 @@ public interface ExperimentStudentHomeworkMapper {
     void save(@Param("record") ExperimentStudentHomeworkModel record);
 
     void update(@Param("record") ExperimentStudentHomeworkModel record);
+
+    void deleteByHomeworkId(@Param("homeworkId") Integer homeworkId);
 }

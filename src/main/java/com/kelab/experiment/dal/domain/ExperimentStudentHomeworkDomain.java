@@ -1,5 +1,7 @@
 package com.kelab.experiment.dal.domain;
 
+import com.kelab.info.usercenter.info.UserInfo;
+
 public class ExperimentStudentHomeworkDomain {
 
     private Integer id;
@@ -19,6 +21,32 @@ public class ExperimentStudentHomeworkDomain {
     private String comment;
 
     private Long commentTime;
+
+    /**
+     * 个人提交
+     */
+    private UserInfo postUserInfo;
+
+    /**
+     * 分组提交
+     */
+    private ExperimentGroupDomain postGroupInfo;
+
+    public UserInfo getPostUserInfo() {
+        return postUserInfo;
+    }
+
+    public void setPostUserInfo(UserInfo postUserInfo) {
+        this.postUserInfo = postUserInfo;
+    }
+
+    public ExperimentGroupDomain getPostGroupInfo() {
+        return postGroupInfo;
+    }
+
+    public void setPostGroupInfo(ExperimentGroupDomain postGroupInfo) {
+        this.postGroupInfo = postGroupInfo;
+    }
 
     public Integer getId() {
         return id;
