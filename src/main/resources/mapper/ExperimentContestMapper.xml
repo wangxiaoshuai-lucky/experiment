@@ -24,6 +24,12 @@
         order by `end_time` asc
         <include refid="limit_sql"/>
     </select>
+    <select id="queryAllByClassId" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from `Experiment_contest`
+        where `class_id` = #{classId, jdbcType=INTEGER}
+    </select>
     <select id="queryByIds" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>

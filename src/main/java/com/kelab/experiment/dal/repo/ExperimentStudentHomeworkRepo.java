@@ -1,6 +1,7 @@
 package com.kelab.experiment.dal.repo;
 
 import com.kelab.experiment.dal.domain.ExperimentStudentHomeworkDomain;
+import com.kelab.experiment.dal.domain.HomeworkSubmitDomain;
 import com.kelab.info.context.Context;
 import com.kelab.info.experiment.query.ExperimentStudentHomeworkQuery;
 
@@ -29,4 +30,8 @@ public interface ExperimentStudentHomeworkRepo {
     void update(ExperimentStudentHomeworkDomain record);
 
     void deleteByHomeworkId(Integer homeworkId);
+
+    List<HomeworkSubmitDomain> queryTotalByHomeworkIds(List<Integer> homeworkIds);
+
+    List<ExperimentStudentHomeworkDomain> queryByHomeworkIds(List<Integer> homeworkIds);
 }

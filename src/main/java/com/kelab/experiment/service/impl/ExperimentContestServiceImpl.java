@@ -52,11 +52,11 @@ public class ExperimentContestServiceImpl implements ExperimentContestService {
         PaginationResult<ExperimentContestInfo> result = new PaginationResult<>();
         List<Integer> ids = CommonService.totalIds(query);
         if (!CollectionUtils.isEmpty(ids)) {
-            List<ExperimentContestInfo> infos = convertToExContestInfo(context, experimentContestRepo.queryByIds(ids));
+            List<ExperimentContestInfo> infos = convertToExContestInfo(context, experimentContestRepo.queryByIds(context, ids, false));
             result.setPagingList(infos);
             result.setTotal(infos.size());
         } else if (query.getClassId() != null) {
-            List<ExperimentContestInfo> infos = convertToExContestInfo(context, experimentContestRepo.queryContest(query));
+            List<ExperimentContestInfo> infos = convertToExContestInfo(context, experimentContestRepo.queryContest(context, query, false));
             result.setPagingList(infos);
             result.setTotal(experimentContestRepo.queryTotal(query));
         }
@@ -89,7 +89,7 @@ public class ExperimentContestServiceImpl implements ExperimentContestService {
     @Override
     public PaginationResult<ExperimentProblemInfo> queryByContestIdPage(Context context, ExperimentProblemQuery query) {
         // 获取题目
-        List<ExperimentContestDomain> contests = experimentContestRepo.queryByIds(Collections.singletonList(query.getContestId()));
+        List<ExperimentContestDomain> contests = experimentContestRepo.queryByIds(context, Collections.singletonList(query.getContestId()), false);
         Preconditions.checkArgument(!CollectionUtils.isEmpty(contests), "实验不存在");
         ExperimentContestDomain nowContest = contests.get(0);
         List<ExperimentProblemDomain> problemDomains = experimentProblemRepo.queryPage(context, query, true);
@@ -110,7 +110,7 @@ public class ExperimentContestServiceImpl implements ExperimentContestService {
     @Override
     public PaginationResult<UserContestRankResult> queryRankByContestId(Context context, Integer contestId) {
         // 获取题目
-        List<ExperimentContestDomain> contests = experimentContestRepo.queryByIds(Collections.singletonList(contestId));
+        List<ExperimentContestDomain> contests = experimentContestRepo.queryByIds(context, Collections.singletonList(contestId), false);
         Preconditions.checkArgument(!CollectionUtils.isEmpty(contests), "实验不存在");
         ExperimentContestDomain contest = contests.get(0);
         Map<Integer, List<ExperimentProblemDomain>> contestProblems = experimentProblemRepo.queryAllByContestIds(context, Collections.singletonList(contestId), false);
@@ -165,16 +165,12 @@ public class ExperimentContestServiceImpl implements ExperimentContestService {
         if (CollectionUtils.isEmpty(domains)) {
             return Collections.emptyList();
         }
-        List<ExperimentContestInfo> contests = domains.stream().map(ExperimentContestConvert::domainToInfo).collect(Collectors.toList());
-        // 每个实验的题目列表
-        List<Integer> contestIds = contests.stream().map(ExperimentContestInfo::getId).collect(Collectors.toList());
-        Map<Integer, List<ExperimentProblemDomain>> contestProblems = experimentProblemRepo.queryAllByContestIds(context, contestIds, false);
         // 获取所有的题目 ids
         List<Integer> proIds = new ArrayList<>();
-        contestProblems.forEach((k, v) -> proIds.addAll(v.stream().map(ExperimentProblemDomain::getProbId).collect(Collectors.toList())));
+        domains.forEach(item -> proIds.addAll(item.getProblemDomains().stream().map(ExperimentProblemDomain::getProbId).collect(Collectors.toList())));
         // 截止时间 endTime， 缩小搜索的范围
         long maxEndTime = 0L;
-        for (ExperimentContestInfo single : contests) {
+        for (ExperimentContestDomain single : domains) {
             maxEndTime = maxEndTime < single.getEndTime() ? single.getEndTime() : maxEndTime;
         }
         // 题目的 ac 记录
@@ -182,8 +178,8 @@ public class ExperimentContestServiceImpl implements ExperimentContestService {
                 Collections.singletonList(context.getOperatorId()), proIds, maxEndTime)
                 .stream().collect(Collectors.toMap(ProblemUserMarkInnerInfo::getProblemId, obj -> obj, (v1, v2) -> v2));
         // 填充每个实验的进度
-        contests.forEach(singleContest -> {
-            List<ExperimentProblemDomain> problems = contestProblems.getOrDefault(singleContest.getId(), Collections.emptyList());
+        domains.forEach(singleContest -> {
+            List<ExperimentProblemDomain> problems = singleContest.getProblemDomains();
             List<ExperimentProblemDomain> acProblems = problems.stream()
                     .filter(singleProblem ->
                             userAcMap.containsKey(singleProblem.getProbId()) && userAcMap.get(singleProblem.getProbId()).getMarkTime() < singleContest.getEndTime())
@@ -191,7 +187,7 @@ public class ExperimentContestServiceImpl implements ExperimentContestService {
             singleContest.setAcNum(acProblems.size());
             singleContest.setTotalNum(problems.size());
         });
-        return contests;
+        return domains.stream().map(ExperimentContestConvert::domainToInfo).collect(Collectors.toList());
     }
 
     private List<ExperimentProblemInfo> convertToExProbInfo(List<ExperimentProblemDomain> domains) {

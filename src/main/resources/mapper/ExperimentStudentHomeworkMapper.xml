@@ -117,6 +117,31 @@
             and `score` == 0
         </if>
     </select>
+    <resultMap id="HomeworkSubmitDomainMap" type="com.kelab.experiment.dal.domain.HomeworkSubmitDomain">
+        <result column="total_num" property="totalNum" jdbcType="INTEGER"/>
+        <result column="homework_id" property="homeworkId" jdbcType="INTEGER"/>
+    </resultMap>
+    <select id="queryTotalByHomeworkIds" resultMap="HomeworkSubmitDomainMap">
+        select
+        `homework_id`, count(*) as `total_num`
+        from `Experiment_student_homework`
+        where `homework_id` in
+        <foreach collection="homeworkIds" item="item"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        group by `homework_id`
+    </select>
+    <select id="queryByHomeworkIds" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from `Experiment_student_homework`
+        where `homework_id` in
+        <foreach collection="homeworkIds" item="item"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
 
     <delete id="deleteByHomeworkId">
         delete from `Experiment_student_homework`

@@ -2,11 +2,13 @@ package com.kelab.experiment.controller;
 
 import cn.wzy.verifyUtils.annotation.Verify;
 import com.kelab.experiment.convert.ExperimentHomeworkConvert;
+import com.kelab.experiment.convert.ExperimentStudentHomeworkConvert;
 import com.kelab.experiment.service.ExperimentHomeworkService;
 import com.kelab.info.base.JsonAndModel;
 import com.kelab.info.base.constant.StatusMsgConstant;
 import com.kelab.info.context.Context;
 import com.kelab.info.experiment.info.ExperimentHomeworkInfo;
+import com.kelab.info.experiment.info.ExperimentStudentHomeworkInfo;
 import com.kelab.info.experiment.query.ExperimentHomeworkQuery;
 import com.kelab.info.experiment.query.ExperimentStudentHomeworkQuery;
 import org.springframework.web.bind.annotation.*;
@@ -82,5 +84,36 @@ public class ExperimentHomeworkController {
         return JsonAndModel.builder(StatusMsgConstant.SUCCESS)
                 .data(experimentHomeworkService.queryStudentHomeworkPage(context, query))
                 .build();
+    }
+
+    /**
+     * 学生提交作业
+     */
+    @PostMapping("/experiment/class/studentHomework.do")
+    @Verify(notNull = {"context.operatorId", "context.operatorRoleId",
+            "record.homeworkId", "record.attachName", "record.attachUrl"})
+    public JsonAndModel submitHomework(Context context, @RequestBody ExperimentStudentHomeworkInfo record) {
+        experimentHomeworkService.submitHomework(context, ExperimentStudentHomeworkConvert.infoToDomain(record));
+        return JsonAndModel.builder(StatusMsgConstant.SUCCESS).build();
+    }
+
+    /**
+     * 教师批改作业
+     */
+    @PutMapping("/experiment/class/studentHomework.do")
+    @Verify(notNull = {"context.operatorId", "context.operatorRoleId",
+            "record.id", "record.score", "record.comment"})
+    public JsonAndModel reviewHomework(Context context, @RequestBody ExperimentStudentHomeworkInfo record) {
+        experimentHomeworkService.reviewHomework(context, ExperimentStudentHomeworkConvert.infoToDomain(record));
+        return JsonAndModel.builder(StatusMsgConstant.SUCCESS).build();
+    }
+
+    /**
+     * 教师下载课程成绩
+     */
+    @GetMapping("/experiment/class/score.do")
+    @Verify(notNull = {"context.operatorId", "context.operatorRoleId", "classId"})
+    public Object downloadClassScore(Context context, Integer classId) {
+        return experimentHomeworkService.downloadClassScore(context, classId);
     }
 }

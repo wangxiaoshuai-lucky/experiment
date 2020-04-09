@@ -12,6 +12,9 @@ public interface ExperimentContestMapper {
 
     List<ExperimentContestModel> queryContest(@Param("query") ExperimentContestQuery query);
 
+
+    List<ExperimentContestModel> queryAllByClassId(@Param("classId") Integer classId);
+
     Integer queryTotal(@Param("query") ExperimentContestQuery query);
 
     List<ExperimentContestModel> queryByIds(@Param("ids") List<Integer> ids);

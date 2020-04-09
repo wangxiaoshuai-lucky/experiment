@@ -6,6 +6,7 @@ import com.kelab.experiment.dal.dao.ExperimentStudentHomeworkMapper;
 import com.kelab.experiment.dal.domain.ExperimentGroupDomain;
 import com.kelab.experiment.dal.domain.ExperimentHomeworkDomain;
 import com.kelab.experiment.dal.domain.ExperimentStudentHomeworkDomain;
+import com.kelab.experiment.dal.domain.HomeworkSubmitDomain;
 import com.kelab.experiment.dal.model.ExperimentStudentHomeworkModel;
 import com.kelab.experiment.dal.repo.ExperimentGroupRepo;
 import com.kelab.experiment.dal.repo.ExperimentHomeworkRepo;
@@ -84,6 +85,16 @@ public class ExperimentStudentHomeworkRepoImpl implements ExperimentStudentHomew
     @Override
     public void deleteByHomeworkId(Integer homeworkId) {
         experimentStudentHomeworkMapper.deleteByHomeworkId(homeworkId);
+    }
+
+    @Override
+    public List<HomeworkSubmitDomain> queryTotalByHomeworkIds(List<Integer> homeworkIds) {
+        return experimentStudentHomeworkMapper.queryTotalByHomeworkIds(homeworkIds);
+    }
+
+    @Override
+    public List<ExperimentStudentHomeworkDomain> queryByHomeworkIds(List<Integer> homeworkIds) {
+        return convertToDomain(null, experimentStudentHomeworkMapper.queryByHomeworkIds(homeworkIds), false);
     }
 
     private List<ExperimentStudentHomeworkDomain> convertToDomain(Context context, List<ExperimentStudentHomeworkModel> models, boolean isFillSubmitInfo) {

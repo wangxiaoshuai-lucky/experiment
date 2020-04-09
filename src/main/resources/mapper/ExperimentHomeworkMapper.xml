@@ -72,7 +72,7 @@
         select
         <include refid="Base_Column_List"/>
         from `Experiment_homework`
-        where and `class_id` = #{classId, jdbcType=INTEGER}
+        where `class_id` = #{classId, jdbcType=INTEGER}
         order by `end_time` asc
     </select>
 
