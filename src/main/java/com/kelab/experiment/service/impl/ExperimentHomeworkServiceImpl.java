@@ -207,10 +207,10 @@ public class ExperimentHomeworkServiceImpl implements ExperimentHomeworkService 
             return new ResponseEntity<>(FileUtils.readFileToByteArray(xlsFile), headers, HttpStatus.CREATED);
         } catch (IOException e) {
             e.printStackTrace();
+            throw new RuntimeException(e);
         } finally {
             xlsFile.delete();
         }
-        return null;
     }
 
     /**
@@ -228,24 +228,28 @@ public class ExperimentHomeworkServiceImpl implements ExperimentHomeworkService 
             sheet.addCell(new Label(col++, row, "班级"));
             ExperimentUserScoreDomain oneStudent = getOneStudent(studentScoreMap);
             assert oneStudent != null;
-            List<ExperimentContestDomain> contestList = new ArrayList<>(oneStudent.getContestMap().values());
-            contestList.sort(Comparator.comparing(ExperimentContestDomain::getId));
-            for (ExperimentContestDomain single : contestList) {
-                sheet.addCell(new Label(col++, row, single.getTitle() + "(实验)"));
+            if (!CollectionUtils.isEmpty(oneStudent.getContestMap())) {
+                List<ExperimentContestDomain> contestList = new ArrayList<>(oneStudent.getContestMap().values());
+                contestList.sort(Comparator.comparing(ExperimentContestDomain::getId));
+                for (ExperimentContestDomain single : contestList) {
+                    sheet.addCell(new Label(col++, row, single.getTitle() + "(实验)"));
+                }
             }
-            // 分数低于60标红
-            WritableFont font = new WritableFont(WritableFont.ARIAL, 14, WritableFont.BOLD, false, UnderlineStyle.NO_UNDERLINE, Colour.RED);
-            WritableCellFormat redWcf = new WritableCellFormat(font);
-            List<ExperimentHomeworkDomain> homeworkList = new ArrayList<>(oneStudent.getHomeworkMap().values());
-            homeworkList.sort(Comparator.comparing(ExperimentHomeworkDomain::getId));
-            for (ExperimentHomeworkDomain single : homeworkList) {
-                if (single.getType() == HomeWorkType.GROUP) {
-                    sheet.addCell(new Label(col++, row, single.getTitle() + "(小组作业)"));
-                } else {
-                    sheet.addCell(new Label(col++, row, single.getTitle() + "(个人作业)"));
+            if (!CollectionUtils.isEmpty(oneStudent.getHomeworkMap())) {
+                List<ExperimentHomeworkDomain> homeworkList = new ArrayList<>(oneStudent.getHomeworkMap().values());
+                homeworkList.sort(Comparator.comparing(ExperimentHomeworkDomain::getId));
+                for (ExperimentHomeworkDomain single : homeworkList) {
+                    if (single.getType() == HomeWorkType.GROUP) {
+                        sheet.addCell(new Label(col++, row, single.getTitle() + "(小组作业)"));
+                    } else {
+                        sheet.addCell(new Label(col++, row, single.getTitle() + "(个人作业)"));
+                    }
                 }
             }
             sheet.addCell(new Label(col, row, "综合成绩(所有实验成绩和作业成绩平均分)"));
+            // 分数低于60标红
+            WritableFont font = new WritableFont(WritableFont.ARIAL, 10, WritableFont.NO_BOLD, false, UnderlineStyle.NO_UNDERLINE, Colour.RED);
+            WritableCellFormat redWcf = new WritableCellFormat(font);
             for (Map.Entry<Integer, ExperimentUserScoreDomain> entry : studentScoreMap.entrySet()) {
                 ExperimentUserScoreDomain student = entry.getValue();
                 col = 0;
@@ -253,38 +257,45 @@ public class ExperimentHomeworkServiceImpl implements ExperimentHomeworkService 
                 sheet.addCell(new Label(col++, row, student.getStudentInfo().getStudentInfo().getStudentId()));
                 sheet.addCell(new Label(col++, row, student.getStudentInfo().getStudentInfo().getRealName()));
                 sheet.addCell(new Label(col++, row, student.getStudentInfo().getStudentInfo().getStudentClass()));
-                List<ExperimentContestDomain> userContestList = new ArrayList<>(student.getContestMap().values());
-                userContestList.sort(Comparator.comparing(ExperimentContestDomain::getId));
                 double totalScore = 0;
-                for (ExperimentContestDomain single : userContestList) {
-                    double score = single.getAcNum() / (single.getTotalNum() * 1.0) * 100.0;
-                    if (score < 60) {
-                        sheet.addCell(new Label(col++, row, String.format("%.2f", score), redWcf));
-                    } else {
-                        sheet.addCell(new Label(col++, row, String.format("%.2f", score)));
+                int column = 0;
+                if (!CollectionUtils.isEmpty(student.getContestMap())) {
+                    List<ExperimentContestDomain> userContestList = new ArrayList<>(student.getContestMap().values());
+                    userContestList.sort(Comparator.comparing(ExperimentContestDomain::getId));
+                    for (ExperimentContestDomain single : userContestList) {
+                        double score = single.getAcNum() / (single.getTotalNum() * 1.0) * 100.0;
+                        if (score < 60) {
+                            sheet.addCell(new Label(col++, row, String.format("%.2f", score), redWcf));
+                        } else {
+                            sheet.addCell(new Label(col++, row, String.format("%.2f", score)));
+                        }
+                        totalScore += score;
+                        column++;
                     }
-                    totalScore += score;
                 }
-                List<ExperimentHomeworkDomain> userHomeworkList = new ArrayList<>(student.getHomeworkMap().values());
-                userHomeworkList.sort(Comparator.comparing(ExperimentHomeworkDomain::getId));
-                for (ExperimentHomeworkDomain single : userHomeworkList) {
-                    if (single.getSubmitInfo().getScore() < 60) {
-                        sheet.addCell(new Label(col++, row, single.getSubmitInfo().getScore().toString(), redWcf));
-                    } else {
-                        sheet.addCell(new Label(col++, row, single.getSubmitInfo().getScore().toString()));
+                if (!CollectionUtils.isEmpty(student.getHomeworkMap())) {
+                    List<ExperimentHomeworkDomain> userHomeworkList = new ArrayList<>(student.getHomeworkMap().values());
+                    userHomeworkList.sort(Comparator.comparing(ExperimentHomeworkDomain::getId));
+                    for (ExperimentHomeworkDomain single : userHomeworkList) {
+                        if (single.getSubmitInfo().getScore() < 60) {
+                            sheet.addCell(new Label(col++, row, String.format("%.2f", single.getSubmitInfo().getScore() * 1.0), redWcf));
+                        } else {
+                            sheet.addCell(new Label(col++, row, String.format("%.2f", single.getSubmitInfo().getScore() * 1.0)));
+                        }
+                        totalScore += single.getSubmitInfo().getScore();
+                        column++;
                     }
-                    totalScore += single.getSubmitInfo().getScore();
                 }
-                double averageScore = totalScore / (userContestList.size() + userHomeworkList.size());
+                double averageScore = totalScore / (column == 0 ? 1 : column);
                 if (averageScore < 60) {
                     sheet.addCell(new Label(col, row, String.format("%.2f", averageScore), redWcf));
-                }else {
+                } else {
                     sheet.addCell(new Label(col, row, String.format("%.2f", averageScore)));
                 }
             }
             workbook.write();
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         } finally {
             try {
                 assert workbook != null;
