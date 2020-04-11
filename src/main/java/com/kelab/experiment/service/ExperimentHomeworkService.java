@@ -8,7 +8,6 @@ import com.kelab.info.experiment.info.ExperimentHomeworkInfo;
 import com.kelab.info.experiment.info.ExperimentStudentHomeworkInfo;
 import com.kelab.info.experiment.query.ExperimentHomeworkQuery;
 import com.kelab.info.experiment.query.ExperimentStudentHomeworkQuery;
-import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
@@ -49,11 +48,5 @@ public interface ExperimentHomeworkService {
      * 教师批改作业
      */
     void reviewHomework(Context context, ExperimentStudentHomeworkDomain record);
-
-
-    /**
-     * 下载班级的成绩
-     */
-    ResponseEntity<byte[]> downloadClassScore(Context context, Integer classId);
 
 }

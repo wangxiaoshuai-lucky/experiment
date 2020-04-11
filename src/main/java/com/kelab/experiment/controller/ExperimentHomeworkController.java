@@ -4,6 +4,7 @@ import cn.wzy.verifyUtils.annotation.Verify;
 import com.kelab.experiment.convert.ExperimentHomeworkConvert;
 import com.kelab.experiment.convert.ExperimentStudentHomeworkConvert;
 import com.kelab.experiment.service.ExperimentHomeworkService;
+import com.kelab.experiment.service.ExperimentScoreDownLoadService;
 import com.kelab.info.base.JsonAndModel;
 import com.kelab.info.base.constant.StatusMsgConstant;
 import com.kelab.info.context.Context;
@@ -20,8 +21,12 @@ public class ExperimentHomeworkController {
 
     private ExperimentHomeworkService experimentHomeworkService;
 
-    public ExperimentHomeworkController(ExperimentHomeworkService experimentHomeworkService) {
+    private ExperimentScoreDownLoadService experimentScoreDownLoadService;
+
+    public ExperimentHomeworkController(ExperimentHomeworkService experimentHomeworkService,
+                                        ExperimentScoreDownLoadService experimentScoreDownLoadService) {
         this.experimentHomeworkService = experimentHomeworkService;
+        this.experimentScoreDownLoadService = experimentScoreDownLoadService;
     }
 
     /**
@@ -114,6 +119,15 @@ public class ExperimentHomeworkController {
     @GetMapping("/experiment/class/score.do")
     @Verify(notNull = {"context.operatorId", "context.operatorRoleId", "classId"})
     public Object downloadClassScore(Context context, Integer classId) {
-        return experimentHomeworkService.downloadClassScore(context, classId);
+        return experimentScoreDownLoadService.downloadClassScore(context, classId);
+    }
+
+    /**
+     * 教师下载课程代码
+     */
+    @GetMapping("/experiment/class/source.do")
+    @Verify(notNull = {"context.operatorId", "context.operatorRoleId", "classId"})
+    public Object downloadClassContestSource(Context context, Integer classId) {
+        return experimentScoreDownLoadService.downloadClassContestSource(context, classId);
     }
 }
