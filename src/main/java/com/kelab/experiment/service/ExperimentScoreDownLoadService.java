@@ -3,8 +3,6 @@ package com.kelab.experiment.service;
 import com.kelab.info.context.Context;
 import org.springframework.http.ResponseEntity;
 
-import java.io.IOException;
-
 public interface ExperimentScoreDownLoadService {
     /**
      * 下载班级的成绩

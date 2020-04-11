@@ -90,8 +90,8 @@ public class ExperimentScoreDownLoadServiceImpl implements ExperimentScoreDownLo
                                             ExperimentClassDomain classDomain,
                                             List<ExperimentContestDomain> contestList) {
         // 文件目录
-        String path = "/tmp" + System.currentTimeMillis();
-        String classDir = path + "/" + classDomain.getClassName() + classDomain.getTermName();
+        String path = "/tmp/" + System.currentTimeMillis();
+        String classDir = path + "/" + classDomain.getClassName() + "(" + classDomain.getTermName() + ")";
         // 对于每一个实验都进行创建文件夹
         contestList.forEach(contest -> {
             File contestDir = new File(classDir + "/" + contest.getTitle());
@@ -105,7 +105,7 @@ public class ExperimentScoreDownLoadServiceImpl implements ExperimentScoreDownLo
                     ProblemUserMarkInnerInfo submit = userContest.getSubmitHistory().get(problem.getProbId());
                     // 在实验截止时间之前有提交记录
                     if (submit != null && submit.getMarkTime() < contest.getEndTime()) {
-                        File problemFile = new File(userDir, problem.getProbId() + problem.getTitle() + ".txt");
+                        File problemFile = new File(userDir, "(" + problem.getProbId() + ")" + problem.getTitle() + ".txt");
                         try {
                             Preconditions.checkState(problemFile.createNewFile());
                             FileUtils.write(problemFile, submit.getSubmitRef().getSource());
