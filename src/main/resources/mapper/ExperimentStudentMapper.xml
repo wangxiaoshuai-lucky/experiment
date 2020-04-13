@@ -73,6 +73,9 @@
         <include refid="Base_Column_List"/>
         from `Experiment_student`
         where `user_id` = #{query.userId, jdbcType=INTEGER}
+        <if test="query.classId">
+            and `class_id` = #{query.classId, jdbcType=INTEGER}
+        </if>
         and `status` = 1
         <include refid="limit_sql"/>
     </select>
