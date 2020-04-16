@@ -103,7 +103,7 @@ public class ExperimentContestServiceImpl implements ExperimentContestService {
         // 返回结果
         PaginationResult<ExperimentProblemInfo> result = new PaginationResult<>();
         result.setPagingList(convertToExProbInfo(problemDomains));
-        result.setTotal(problemDomains.size());
+        result.setTotal(experimentProblemRepo.queryTotal(query));
         return result;
     }
 
