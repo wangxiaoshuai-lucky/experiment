@@ -36,6 +36,9 @@
             -- 学生修改字段
             <if test="record.attachName != null">
                 `attach_name` = #{record.attachName},
+                `score` = 0,
+                `comment` = null,
+                `comment_time` = null,
             </if>
             <if test="record.attachUrl != null">
                 `attach_url` = #{record.attachUrl},
