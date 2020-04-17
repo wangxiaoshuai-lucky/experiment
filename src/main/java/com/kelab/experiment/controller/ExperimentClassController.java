@@ -122,7 +122,7 @@ public class ExperimentClassController {
      */
     @PutMapping("/experiment/class/student.do")
     @Verify(
-            notNull = {"context.operatorId", "context.operatorRoleId", "record.status"},
+            notNull = {"context.operatorId", "context.operatorRoleId", "record.status", "record.classId"},
             sizeLimit = "record.ids [1, 10000]"
     )
     public JsonAndModel reviewStudentApply(Context context, @RequestBody ExperimentReviewStudentInfo record) {

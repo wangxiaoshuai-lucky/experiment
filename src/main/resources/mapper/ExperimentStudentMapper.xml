@@ -91,7 +91,7 @@
         update `Experiment_student`
         set `status` = #{record.status, jdbcType=INTEGER}
         where `id` in
-        <foreach collection="ids" item="item"
+        <foreach collection="record.ids" item="item"
                  open="(" separator="," close=")">
             #{item}
         </foreach>
@@ -100,7 +100,7 @@
     <delete id="reject">
         delete from `Experiment_student`
         where `id` in
-        <foreach collection="ids" item="item"
+        <foreach collection="record.ids" item="item"
                  open="(" separator="," close=")">
             #{item}
         </foreach>
