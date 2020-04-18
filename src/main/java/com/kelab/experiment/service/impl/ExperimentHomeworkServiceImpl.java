@@ -96,9 +96,7 @@ public class ExperimentHomeworkServiceImpl implements ExperimentHomeworkService 
 
     private void checkGroup(ExperimentHomeworkDomain record) {
         if (record.getType() == HomeWorkType.GROUP) {
-            List<ExperimentHomeworkDomain> old = experimentHomeworkRepo.queryByIds(Collections.singletonList(record.getId()));
-            Preconditions.checkArgument(!CollectionUtils.isEmpty(old), "作业不存在");
-            List<ExperimentGroupDomain> groupDomains = experimentGroupRepo.queryAllByClassId(null, old.get(0).getClassId(), false);
+            List<ExperimentGroupDomain> groupDomains = experimentGroupRepo.queryAllByClassId(null, record.getClassId(), false);
             Preconditions.checkArgument(!CollectionUtils.isEmpty(groupDomains), "班级没有分组，不可以布置分组作业");
         }
     }
