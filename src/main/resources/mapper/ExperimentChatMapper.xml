@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.kelab.experiment.dal.dao.ExperimentChatMapper">
+    <resultMap id="BaseResultMap" type="com.kelab.experiment.dal.model.ExperimentChatModel">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="title" property="title" jdbcType="VARCHAR"/>
+        <result column="content" property="content" jdbcType="LONGVARCHAR"/>
+        <result column="user_id" property="userId" jdbcType="INTEGER"/>
+        <result column="class_id" property="classId" jdbcType="INTEGER"/>
+        <result column="post_time" property="postTime" jdbcType="BIGINT"/>
+        <result column="parent_id" property="parentId" jdbcType="INTEGER"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        `id`, `title`,`content`, `user_id`, `post_time`, `parent_id`, `class_id`
+    </sql>
+    <sql id="limit_sql">
+        limit ${(query.page - 1) * query.rows}, ${query.rows}
+    </sql>
+
+    <select id="queryPage" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from `Experiment_chat`
+        where `class_id` = #{query.classId}
+        -- 查询子评论
+        <if test="query.id != null">
+            and `parent_id` = #{query.id, jdbcType=INTEGER}
+        </if>
+        -- 查询根标题
+        <if test="query.id == null">
+            and `parent_id` = 0
+        </if>
+        order by `id` desc
+        <include refid="limit_sql"/>
+    </select>
+
+    <select id="queryById" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from `Experiment_chat`
+        where `id` = #{id}
+    </select>
+
+    <select id="queryTotal" resultType="java.lang.Integer">
+        select
+        count(*)
+        from `Experiment_chat`
+        where `class_id` = #{query.classId}
+        -- 查询子评论
+        <if test="query.id != null">
+            and `parent_id` = #{query.id, jdbcType=INTEGER}
+        </if>
+        -- 查询根标题
+        <if test="query.id == null">
+            and `parent_id` = 0
+        </if>
+    </select>
+
+    <insert id="save" keyProperty="id" useGeneratedKeys="true">
+        insert into `Experiment_chat`
+        (`class_id`, `title`,`content`, `user_id`, `post_time`, `parent_id`)
+        values
+        (#{record.classId}, #{record.title}, #{record.content}, #{record.userId}, #{record.postTime}, #{record.parentId})
+    </insert>
+</mapper>
