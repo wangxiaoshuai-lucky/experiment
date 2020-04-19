@@ -52,11 +52,11 @@ public class ExperimentContestServiceImpl implements ExperimentContestService {
         PaginationResult<ExperimentContestInfo> result = new PaginationResult<>();
         List<Integer> ids = CommonService.totalIds(query);
         if (!CollectionUtils.isEmpty(ids)) {
-            List<ExperimentContestInfo> infos = convertToExContestInfo(context, experimentContestRepo.queryByIds(context, ids, false));
+            List<ExperimentContestInfo> infos = convertToExContestInfo(context, experimentContestRepo.queryByIds(context, ids, true));
             result.setPagingList(infos);
             result.setTotal(infos.size());
         } else if (query.getClassId() != null) {
-            List<ExperimentContestInfo> infos = convertToExContestInfo(context, experimentContestRepo.queryContest(context, query, false));
+            List<ExperimentContestInfo> infos = convertToExContestInfo(context, experimentContestRepo.queryContest(context, query, true));
             result.setPagingList(infos);
             result.setTotal(experimentContestRepo.queryTotal(query));
         }

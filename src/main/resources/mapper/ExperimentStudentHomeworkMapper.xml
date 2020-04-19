@@ -27,7 +27,7 @@
         #{record.targetId},
         #{record.attachName},
         #{record.attachUrl},
-        #{record.postTime},
+        #{record.postTime}
         )
     </insert>
     <update id="update">
@@ -72,7 +72,7 @@
             and `score` != 0
         </if>
         <if test="query.isComment == false">
-            and `score` == 0
+            and `score` = 0
         </if>
         <include refid="limit_sql"/>
     </select>
@@ -117,7 +117,7 @@
             and `score` != 0
         </if>
         <if test="query.isComment == false">
-            and `score` == 0
+            and `score` = 0
         </if>
     </select>
     <resultMap id="HomeworkSubmitDomainMap" type="com.kelab.experiment.dal.domain.HomeworkSubmitDomain">

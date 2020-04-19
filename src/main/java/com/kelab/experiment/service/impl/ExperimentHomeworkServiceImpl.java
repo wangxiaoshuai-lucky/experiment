@@ -160,8 +160,8 @@ public class ExperimentHomeworkServiceImpl implements ExperimentHomeworkService 
 
     @Override
     public void reviewHomework(Context context, ExperimentStudentHomeworkDomain record) {
-        Preconditions.checkArgument(record.getScore() <= 0, "不能低于1分哦");
-        Preconditions.checkArgument(record.getScore() > 100, "不能超过100分");
+        Preconditions.checkArgument(record.getScore() > 0, "不能低于1分哦");
+        Preconditions.checkArgument(record.getScore() <= 100, "不能超过100分");
         record.setAttachName(null);
         record.setAttachUrl(null);
         record.setPostTime(null);
