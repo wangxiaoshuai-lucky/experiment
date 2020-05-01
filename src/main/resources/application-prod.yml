@@ -6,9 +6,9 @@ eureka:
 spring:
   # mysql 配置
   datasource:
-    url: jdbc:mysql://192.168.0.115:3306/oj3?characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true
-    username: wzy
-    password: wzy
+    url: jdbc:mysql://192.168.0.116:3306/oj4?characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true
+    username: kelab
+    password: Swust.kelab123
     type: com.alibaba.druid.pool.DruidDataSource
     driver-class-name: com.mysql.jdbc.Driver
   # redis 配置
