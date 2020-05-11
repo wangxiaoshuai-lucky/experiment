@@ -183,24 +183,26 @@ public class ExperimentHomeworkServiceImpl implements ExperimentHomeworkService 
         // 填充自己的作业信息
         // 查询自己所在分组信息，查询分组作业
         ExperimentStudentDomain studentDomain = experimentStudentRepo.queryByUserIdAndClassId(context.getOperatorId(), domains.get(0).getClassId());
-        List<ExperimentStudentHomeworkDomain> studentHomework = experimentStudentHomeworkRepo.queryAllByHomeworkIdsAndTargetIds(context,
-                domains.stream().map(ExperimentHomeworkDomain::getId).collect(Collectors.toList()),
-                Arrays.asList(context.getOperatorId(), studentDomain.getGroupId()),
-                true);
-        // Map<作业 ID::提交人 ID, 学生作业> 这里的 targetId 有可能是用户 id 也有可能是分组 id
-        Map<String, ExperimentStudentHomeworkDomain> studentHomeworkMap = studentHomework.stream().collect(
-                Collectors.toMap(item -> item.getHomeworkId() + "::" + item.getTargetId(), obj -> obj, (v1, v2) -> v2));
-        domains.forEach(item -> {
-            switch (item.getType()) {
-                case PERSON:
-                    item.setSubmitInfo(studentHomeworkMap.get(item.getId() + "::" + context.getOperatorId()));
-                    break;
-                case GROUP:
-                    item.setSubmitInfo(studentHomeworkMap.get(item.getId() + "::" + studentDomain.getGroupId()));
-                    break;
-                default:
-            }
-        });
+        if (studentDomain != null) {//自己加入了班级
+            List<ExperimentStudentHomeworkDomain> studentHomework = experimentStudentHomeworkRepo.queryAllByHomeworkIdsAndTargetIds(context,
+                    domains.stream().map(ExperimentHomeworkDomain::getId).collect(Collectors.toList()),
+                    Arrays.asList(context.getOperatorId(), studentDomain.getGroupId()),
+                    true);
+            // Map<作业 ID::提交人 ID, 学生作业> 这里的 targetId 有可能是用户 id 也有可能是分组 id
+            Map<String, ExperimentStudentHomeworkDomain> studentHomeworkMap = studentHomework.stream().collect(
+                    Collectors.toMap(item -> item.getHomeworkId() + "::" + item.getTargetId(), obj -> obj, (v1, v2) -> v2));
+            domains.forEach(item -> {
+                switch (item.getType()) {
+                    case PERSON:
+                        item.setSubmitInfo(studentHomeworkMap.get(item.getId() + "::" + context.getOperatorId()));
+                        break;
+                    case GROUP:
+                        item.setSubmitInfo(studentHomeworkMap.get(item.getId() + "::" + studentDomain.getGroupId()));
+                        break;
+                    default:
+                }
+            });
+        }
         fillSubmitNumberAndTotal(context, domains);
         return domains.stream().map(ExperimentHomeworkConvert::domainToInfo).collect(Collectors.toList());
     }
